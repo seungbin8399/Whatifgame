@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>만약에 게임</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #333;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1.1rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 20px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .question-box {
+      margin-top: 30px;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      font-size: 1.4rem;
+      min-height: 100px;
+      color: #222;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌀 만약에 게임 질문 뽑기</h1>
+  <button onclick="pickQuestion()">질문 뽑기</button>
+  <div class="question-box" id="questionBox">버튼을 눌러 질문을 뽑아보세요!</div>
+
+  <script>
+    const questions = [
+      "만약 오늘이 인생 마지막 날이라면, 무엇을 할 건가요?",
+      "만약 기억을 하루만 유지할 수 있다면, 어떤 하루를 살고 싶나요?",
+      "만약 누구든 하루 동안 바꿔 살 수 있다면, 누구와 바꾸고 싶나요?",
+      "만약 한 가지 감정만 느낄 수 있다면, 어떤 감정을 선택할 건가요?",
+      "만약 5년 전으로 돌아갈 수 있다면, 무엇을 바꾸고 싶나요?",
+      "만약 평생 한 도시에서만 살아야 한다면 어디를 선택하실 건가요?",
+      "만약 지금 하고 있는 일 외에 단 하루 어떤 직업이든 경험할 수 있다면?",
+      "만약 일주일간 인터넷이 끊긴다면 어떤 삶을 살게 될까요?",
+      "만약 과거의 나에게 편지를 보낼 수 있다면, 어떤 말을 해주고 싶나요?",
+      "만약 모든 사람이 당신을 오해한다고 해도, 끝까지 지키고 싶은 신념은?"
+    ];
+
+    let usedQuestions = [];
+
+    function pickQuestion() {
+      if (questions.length === 0) {
+        document.getElementById("questionBox").innerText = "모든 질문을 다 뽑았습니다!";
+        return;
+      }
+      const randomIndex = Math.floor(Math.random() * questions.length);
+      const question = questions.splice(randomIndex, 1)[0];
+      usedQuestions.push(question);
+      document.getElementById("questionBox").innerText = question;
+    }
+  </script>
+</body>
+</html>
