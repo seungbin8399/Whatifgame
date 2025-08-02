@@ -14,7 +14,7 @@
     }
     h1 {
       color: #2c3e50;
-      font-size: 2.2rem;
+      font-size: 1.8rem;
       margin-bottom: 30px;
     }
     button {
@@ -66,7 +66,7 @@
 <body>
   <h1>🌊 생각의 바다 - 만약에 게임</h1>
   <button onclick="pickQuestion()">질문 뽑기</button>
-  <button onclick="resetQuestion()">질문 초기화</button>
+  <button onclick="resetAll()">질문 초기화</button>
   <button onclick="toggleAllQuestions()">모든 질문 보기</button>
   <div class="question-box" id="questionBox">버튼을 눌러 질문을 뽑아보세요!</div>
   <div id="count">0 / 10</div>
@@ -77,7 +77,7 @@
   </div>
 
   <script>
-    const questions = [
+    const allQuestions = [
       "만약 오늘이 인생 마지막 날이라면, 무엇을 할 건가요?",
       "만약 기억을 하루만 유지할 수 있다면, 어떤 하루를 살고 싶나요?",
       "만약 누구든 하루 동안 바꿔 살 수 있다면, 누구와 바꾸고 싶나요?",
@@ -90,8 +90,8 @@
       "만약 모든 사람이 당신을 오해한다고 해도, 끝까지 지키고 싶은 신념은?"
     ];
 
+    let questions = [...allQuestions];
     let usedQuestions = [];
-    let lastQuestion = "";
 
     function pickQuestion() {
       if (questions.length === 0) {
@@ -101,18 +101,15 @@
       const randomIndex = Math.floor(Math.random() * questions.length);
       const question = questions.splice(randomIndex, 1)[0];
       usedQuestions.push(question);
-      lastQuestion = question;
       document.getElementById("questionBox").innerText = question;
       updateCount();
     }
 
-    function resetQuestion() {
-      if (lastQuestion) {
-        questions.push(lastQuestion);
-        usedQuestions = usedQuestions.filter(q => q !== lastQuestion);
-        lastQuestion = "";
-        pickQuestion();
-      }
+    function resetAll() {
+      questions = [...allQuestions];
+      usedQuestions = [];
+      document.getElementById("questionBox").innerText = "버튼을 눌러 질문을 뽑아보세요!";
+      updateCount();
     }
 
     function toggleAllQuestions() {
@@ -120,7 +117,7 @@
       const list = document.getElementById("questionList");
       if (allBox.style.display === "none") {
         list.innerHTML = '';
-        questions.concat(usedQuestions).forEach(q => {
+        allQuestions.forEach(q => {
           const li = document.createElement('li');
           li.textContent = q;
           list.appendChild(li);
@@ -132,7 +129,7 @@
     }
 
     function updateCount() {
-      const total = questions.length + usedQuestions.length;
+      const total = allQuestions.length;
       const used = usedQuestions.length;
       document.getElementById("count").innerText = `${used} / ${total}`;
     }
