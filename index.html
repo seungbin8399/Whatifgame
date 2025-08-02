@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>만약에 게임</title>
+  <title>생각의 바다 - 만약에 게임</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -13,7 +13,9 @@
       text-align: center;
     }
     h1 {
-      color: #333;
+      color: #2c3e50;
+      font-size: 2.2rem;
+      margin-bottom: 30px;
     }
     button {
       padding: 10px 20px;
@@ -24,7 +26,8 @@
       border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.3s ease;
-      margin-top: 20px;
+      margin-top: 10px;
+      margin-right: 10px;
     }
     button:hover {
       background-color: #45a049;
@@ -39,12 +42,39 @@
       min-height: 100px;
       color: #222;
     }
+    .all-questions {
+      margin-top: 40px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: left;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .all-questions ul {
+      padding-left: 20px;
+    }
+    #count {
+      margin-top: 10px;
+      font-size: 1rem;
+      color: #555;
+    }
   </style>
 </head>
 <body>
-  <h1>🌀 만약에 게임 질문 뽑기</h1>
+  <h1>🌊 생각의 바다 - 만약에 게임</h1>
   <button onclick="pickQuestion()">질문 뽑기</button>
+  <button onclick="rePickQuestion()">질문 다시 뽑기</button>
+  <button onclick="toggleAllQuestions()">모든 질문 보기</button>
   <div class="question-box" id="questionBox">버튼을 눌러 질문을 뽑아보세요!</div>
+  <div id="count">0 / 10</div>
+
+  <div class="all-questions" id="allQuestions" style="display: none;">
+    <h3>📋 모든 질문 목록</h3>
+    <ul id="questionList"></ul>
+  </div>
 
   <script>
     const questions = [
@@ -61,6 +91,7 @@
     ];
 
     let usedQuestions = [];
+    let lastQuestion = "";
 
     function pickQuestion() {
       if (questions.length === 0) {
@@ -70,7 +101,40 @@
       const randomIndex = Math.floor(Math.random() * questions.length);
       const question = questions.splice(randomIndex, 1)[0];
       usedQuestions.push(question);
+      lastQuestion = question;
       document.getElementById("questionBox").innerText = question;
+      updateCount();
+    }
+
+    function rePickQuestion() {
+      if (lastQuestion) {
+        questions.push(lastQuestion);
+        usedQuestions = usedQuestions.filter(q => q !== lastQuestion);
+        lastQuestion = "";
+        pickQuestion();
+      }
+    }
+
+    function toggleAllQuestions() {
+      const allBox = document.getElementById("allQuestions");
+      const list = document.getElementById("questionList");
+      if (allBox.style.display === "none") {
+        list.innerHTML = '';
+        questions.concat(usedQuestions).forEach(q => {
+          const li = document.createElement('li');
+          li.textContent = q;
+          list.appendChild(li);
+        });
+        allBox.style.display = "block";
+      } else {
+        allBox.style.display = "none";
+      }
+    }
+
+    function updateCount() {
+      const total = questions.length + usedQuestions.length;
+      const used = usedQuestions.length;
+      document.getElementById("count").innerText = `${used} / ${total}`;
     }
   </script>
 </body>
