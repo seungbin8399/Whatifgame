@@ -12,11 +12,13 @@
       padding: 20px;
       text-align: center;
     }
+
     h1 {
       color: #2c3e50;
       font-size: 1.8rem;
       margin-bottom: 30px;
     }
+
     button {
       padding: 10px 20px;
       font-size: 1.1rem;
@@ -29,9 +31,11 @@
       margin-top: 10px;
       margin-right: 10px;
     }
+
     button:hover {
       background-color: #45a049;
     }
+
     .question-box {
       margin-top: 30px;
       padding: 20px;
@@ -42,6 +46,7 @@
       min-height: 100px;
       color: #222;
     }
+
     .all-questions {
       margin-top: 40px;
       padding: 20px;
@@ -49,18 +54,28 @@
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       text-align: left;
-      max-width: 600px;
+      max-width: 700px;
       margin-left: auto;
       margin-right: auto;
     }
+
+    .all-questions h4 {
+      color: #2c3e50;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
     .all-questions ul {
       padding-left: 20px;
+      margin-bottom: 20px;
     }
+
     #count {
       margin-top: 10px;
       font-size: 1rem;
       color: #555;
     }
+
     .insta-btn {
       margin-top: 20px;
     }
@@ -74,9 +89,8 @@
   <button onclick="toggleAllQuestions()">모든 질문 보기</button>
 
   <div class="question-box" id="questionBox">버튼을 눌러 질문을 뽑아보세요!</div>
-  <div id="count">0 / 20</div>
+  <div id="count">0 / 26</div>
 
-  <!-- ✅ 인스타그램 팔로우 버튼 아래에 위치 -->
   <div class="insta-btn">
     <a href="https://instagram.com/tide_of_thoughts" target="_blank">
       <button style="background-color: #E1306C;">📸 인스타그램 팔로우</button>
@@ -84,43 +98,50 @@
   </div>
 
   <div class="all-questions" id="allQuestions" style="display: none;">
-    <h3>📋 모든 질문 목록</h3>
-    <ul id="questionList"></ul>
+    <h3>📋 모든 질문 목록 (카테고리별)</h3>
+    <div id="questionList"></div>
   </div>
 
   <script>
-    const allQuestions = [
-      "만약 모든 감정을 느끼지 못하게 된다면, 삶은 더 평온해질까, 공허해질까",
-      "만약 5년 전으로 돌아갈 수 있다면, 무엇을 바꾸고 싶어?",
-      "만약 내가 투명인간이 된다면 가장 먼저 하고싶은 일은?",
-      "만약 영원히 살 수 있는 약이 있다면, 당신은 그것을 복용할거야?",
-      "만약 오늘 밤 꿈에서 꼭 누군가를 만날 수 있다면 누구를 보고 싶어?",
-      "만약 죽음이 없어진 세상이라면, 사람들은 여전히 삶의 의미를 찾으려 할까?",
-      "내가 존재하는 이유는 무엇일까?",
-      "돈이 없으면 행복할 수 없을까?",
-      "이 삶이 유일한 기회라면,즐거운 경험을 하고 행복하지 않는 삶을 살 이유가 있을까?",
-      "혼자 있는 시간은 외로움일까, 자유로움일까?",
-      "질투는 사랑의 일부일까?,관계의 독일까?",
-      "나답게 산다는 건 무엇일까?",
-      "지금의 나는 내가 선택한 결과물 일까? 아니면 환경이 만든 결과물일까?",
-      "모두가 거짓말을 안하고 산다면, 더 좋은 세상이 될까?",
-      "가치있는 삶이란 어떤 것일까?",
-      "인생에서 가장 행복했던 순간이 있다면?",
-      "요즘 자주 듣는 노래나 장르는 뭐야?",
-      "요즘 자주 드는 생각은?",
-      "내가 가장 인상깊게 봤던 영화나 드라마 1가지",
-      "행복과 불행은 상대적인걸까?,절대적인걸까?",
-      "나에게 가장 의미있던 순간은 언제일까?,누구와 함께 있었는가?",
-      "결혼전 동거했던 사실, 밝혀야 한다 vs 비밀로 해도 된다",
-      "우정 vs 사랑",
-      "여사친,남사친은 가능한 걸까?",
-      "좋은 이별이란 가능할까?",
-      "성선설 vs 성악설",
-      "내가 좋아하는 사람 vs 나를 좋아하는 사람"
+    const categorizedQuestions = {
+      "💬 가벼운 질문": [
+        "요즘 자주 듣는 노래나 장르는 뭐야?",
+        "요즘 자주 드는 생각은?",
+        "내가 가장 인상깊게 봤던 영화나 드라마 1가지"
+      ],
+      "🌀 만약에 게임": [
+        "만약 모든 감정을 느끼지 못하게 된다면, 삶은 더 평온해질까, 공허해질까",
+        "만약 5년 전으로 돌아갈 수 있다면, 무엇을 바꾸고 싶어?",
+        "만약 내가 투명인간이 된다면 가장 먼저 하고싶은 일은?",
+        "만약 영원히 살 수 있는 약이 있다면, 당신은 그것을 복용할거야?",
+        "만약 오늘 밤 꿈에서 꼭 누군가를 만날 수 있다면 누구를 보고 싶어?",
+        "만약 죽음이 없어진 세상이라면, 사람들은 여전히 삶의 의미를 찾으려 할까?"
+      ],
+      "🧠 철학적 질문": [
+        "내가 존재하는 이유는 무엇일까?",
+        "돈이 없으면 행복할 수 없을까?",
+        "이 삶이 유일한 기회라면,즐거운 경험을 하고 행복하지 않는 삶을 살 이유가 있을까?",
+        "혼자 있는 시간은 외로움일까, 자유로움일까?",
+        "나답게 산다는 건 무엇일까?",
+        "지금의 나는 내가 선택한 결과물 일까? 아니면 환경이 만든 결과물일까?",
+        "모두가 거짓말을 안하고 산다면, 더 좋은 세상이 될까?",
+        "가치있는 삶이란 어떤 것일까?",
+        "행복과 불행은 상대적인걸까?,절대적인걸까?",
+        "나에게 가장 의미있던 순간은 언제일까?,누구와 함께 있었는가?",
+        "성선설 vs 성악설"
+      ],
+      "💘 사랑·관계 질문": [
+        "질투는 사랑의 일부일까?,관계의 독일까?",
+        "결혼전 동거했던 사실, 밝혀야 한다 vs 비밀로 해도 된다",
+        "우정 vs 사랑",
+        "여사친,남사친은 가능한 걸까?",
+        "좋은 이별이란 가능할까?",
+        "내가 좋아하는 사람 vs 나를 좋아하는 사람",
+        "인생에서 가장 행복했던 순간이 있다면?"
+      ]
+    };
 
-      
-    ];
-
+    const allQuestions = Object.values(categorizedQuestions).flat();
     let questions = [...allQuestions];
     let usedQuestions = [];
 
@@ -143,26 +164,33 @@
       updateCount();
     }
 
+    function updateCount() {
+      const total = allQuestions.length;
+      const used = usedQuestions.length;
+      document.getElementById("count").innerText = `${used} / ${total}`;
+    }
+
     function toggleAllQuestions() {
       const allBox = document.getElementById("allQuestions");
       const list = document.getElementById("questionList");
       if (allBox.style.display === "none") {
         list.innerHTML = '';
-        allQuestions.forEach(q => {
-          const li = document.createElement('li');
-          li.textContent = q;
-          list.appendChild(li);
-        });
+        for (const [category, questions] of Object.entries(categorizedQuestions)) {
+          const h4 = document.createElement('h4');
+          h4.textContent = category;
+          list.appendChild(h4);
+          const ul = document.createElement('ul');
+          questions.forEach(q => {
+            const li = document.createElement('li');
+            li.textContent = q;
+            ul.appendChild(li);
+          });
+          list.appendChild(ul);
+        }
         allBox.style.display = "block";
       } else {
         allBox.style.display = "none";
       }
-    }
-
-    function updateCount() {
-      const total = allQuestions.length;
-      const used = usedQuestions.length;
-      document.getElementById("count").innerText = `${used} / ${total}`;
     }
   </script>
 </body>
