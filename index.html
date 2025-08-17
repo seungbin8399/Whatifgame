@@ -3,144 +3,113 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>생각의 바다 - 토론 주제 뽑기</title>
+  <title>생각의 바다 - 토론 주제 뽑기 (Lite)</title>
   <style>
     :root{
-      --bg:#f7f8fa; --card:#ffffff; --text:#2c3e50; --muted:#6b7280;
-      --primary:#2563eb; --primary-hover:#1e40af; --accent:#10b981; --danger:#ef4444;
+      --bg:#f7f8fa; --card:#ffffff; --text:#1f2937; --muted:#6b7280;
+      --primary:#2563eb; --primary-hover:#1e40af; --danger:#ef4444;
     }
     *{box-sizing:border-box}
     body{
-      margin:0; padding:24px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      margin:0; padding:18px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       background:var(--bg); color:var(--text);
     }
-    h1{margin:0 0 12px; font-size:1.8rem}
-    .sub{color:var(--muted); margin-bottom:20px}
-    .wrap{max-width:980px; margin:0 auto}
-    .toolbar,.footer{
-      display:flex; flex-wrap:wrap; gap:10px; align-items:center;
-      background:var(--card); padding:12px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,.06);
+    h1{margin:0 0 8px; font-size:1.6rem}
+    .sub{color:var(--muted); margin-bottom:14px}
+    .wrap{max-width:900px; margin:0 auto}
+
+    .toolbar, .card, .footer {
+      background:var(--card); border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,.06);
+      padding:12px;
     }
-    select,button,input[type="number"],input[type="text"]{
-      padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; color:var(--text);
-      font-size:0.95rem;
+    .toolbar{
+      position:sticky; top:8px; z-index:5;
+      display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+    }
+    select, button {
+      padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; color:var(--text); font-size:.95rem;
     }
     button{background:var(--primary); color:#fff; border:none; cursor:pointer}
     button:hover{background:var(--primary-hover)}
-    button.ghost{background:#eef2ff; color:#1e3a8a}
-    button.gray{background:#e5e7eb; color:#111827}
-    button.success{background:var(--accent); color:#fff}
-    button.danger{background:var(--danger); color:#fff}
-    button.icon{display:flex; align-items:center; gap:6px}
-    .grow{flex:1}
-    .grid{
-      display:grid; grid-template-columns:1fr; gap:16px; margin-top:16px;
-    }
-    @media(min-width:900px){ .grid{grid-template-columns:2fr 1fr} }
-    .card{
-      background:var(--card); border-radius:14px; padding:18px; box-shadow:0 6px 16px rgba(0,0,0,.08);
-    }
+    button.danger{background:var(--danger)}
+    .count{margin-left:auto; color:var(--muted); font-size:.95rem}
+
+    .card{margin-top:12px}
     .question-box{
-      min-height:120px; display:flex; align-items:center; justify-content:center;
-      font-size:1.4rem; text-align:center; padding:24px; border:2px dashed #e5e7eb; border-radius:12px;
+      min-height:96px; display:flex; align-items:center; justify-content:center;
+      text-align:center; border:2px dashed #e5e7eb; border-radius:12px;
+      padding:16px; line-height:1.5;
+      font-size:clamp(1rem, 4.8vw, 1.3rem);
     }
-    .meta{display:flex; gap:12px; flex-wrap:wrap; color:var(--muted); margin-top:10px; font-size:.95rem}
-    .badge{background:#eef2ff; color:#1e3a8a; padding:4px 8px; border-radius:999px; font-weight:600}
-    .count{margin-left:auto}
-    .history{max-height:340px; overflow:auto; border-top:1px solid #f3f4f6; margin-top:10px}
-    .history-item{display:flex; align-items:center; gap:8px; padding:10px 0; border-bottom:1px dashed #eef2ff}
-    .history-item small{color:var(--muted)}
-    .history-item .title{flex:1}
-    .list{max-height:420px; overflow:auto}
-    .list h4{margin:16px 0 8px; color:#111827}
-    .list li{margin:6px 0; color:#374151}
-    .timer{display:flex; align-items:center; gap:8px; margin-top:10px}
-    .timer .display{
-      font-variant-numeric: tabular-nums;
-      font-size:1.6rem; font-weight:800; padding:8px 12px; background:#0ea5e9; color:#fff; border-radius:10px;
-      min-width:120px; text-align:center;
+    .meta{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; color:#111827}
+    .badge{background:#eef2ff; color:#1e3a8a; padding:4px 8px; border-radius:999px; font-weight:600; font-size:.9rem}
+    .status{margin-top:6px; color:var(--muted); min-height:20px; font-size:.95rem}
+
+    .footer{
+      margin-top:10px; display:flex; flex-wrap:wrap; gap:8px; align-items:center
     }
-    .status{margin-top:10px; color:var(--muted); min-height:20px}
-    .toast{position:fixed; left:50%; transform:translateX(-50%); bottom:24px; background:#111827; color:#fff;
-      padding:10px 14px; border-radius:10px; opacity:0; pointer-events:none; transition:opacity .25s}
-    .toast.show{opacity:1}
-    .muted{color:var(--muted)}
+    .spacer{flex:1}
+
+    .list-card{margin-top:12px}
+    .list h4{margin:12px 0 6px}
+    .list ul{margin:0; padding-left:18px}
+    .list li{margin:4px 0; color:#374151}
+
+    /* Mobile polish */
+    @media (max-width: 520px){
+      body{padding:14px}
+      h1{font-size:1.35rem}
+      .toolbar select, .toolbar button{width:100%}
+      .count{width:100%; text-align:right}
+      button, select{font-size:16px} /* iOS zoom 방지 */
+    }
   </style>
 </head>
 <body>
 <div class="wrap">
   <h1>🌊 생각의 바다 — 토론 주제 뽑기</h1>
-  <div class="sub">토론에 맞춘 주제 추첨기🌊. </div>
+  <div class="sub">모바일 친화 · 핵심 기능만 담백하게.</div>
 
-  <!-- 상단 툴바 -->
+  <!-- Controls -->
   <div class="toolbar" role="region" aria-label="controls">
-    <div class="switch" style="display:flex; align-items:center; gap:8px">
-      <input type="checkbox" id="roulette" />
-      <label for="roulette">룰렛 애니메이션</label>
-    </div>
+    <label for="category" class="sr-only">카테고리</label>
     <select id="category">
       <option value="ALL">전체 카테고리</option>
     </select>
-    <button id="btnPick" class="icon"><span>🎲</span><span>주제 뽑기</span></button>
-    <button id="btnShowAll" class="ghost">전체 목록 토글</button>
-    <div class="count muted" id="count">0 / 0</div>
+    <button id="btnPick">🎲 주제 뽑기</button>
+    <button id="btnToggleList" type="button">전체 목록 토글</button>
+    <div class="count" id="count">0 / 0</div>
   </div>
 
-  <!-- 본문 -->
-  <div class="grid">
-    <section class="card" aria-live="polite">
-      <div class="question-box" id="questionBox">버튼을 눌러 주제를 뽑아보세요!</div>
-      <div class="meta">
-        <span class="badge" id="currentCategory">카테고리: -</span>
-        <span class="badge" id="currentRefs">연계 키워드: -</span>
-        <span class="count" id="subcount"></span>
-      </div>
+  <!-- Current -->
+  <section class="card" aria-live="polite">
+    <div class="question-box" id="questionBox">버튼을 눌러 주제를 뽑아보세요!</div>
+    <div class="meta">
+      <span class="badge" id="currentCategory">카테고리: -</span>
+      <span class="badge" id="currentRefs">연계 키워드: -</span>
+      <span class="badge" id="subcount">진행: 0 / 0</span>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="footer">
+      <button id="btnResetCat" type="button">현재 카테고리 초기화</button>
+      <div class="spacer"></div>
+      <button id="btnResetAll" class="danger" type="button">전체 초기화</button>
+    </div>
+  </section>
 
-      <!-- 타이머 -->
-      <div class="timer">
-        <label for="mins" class="muted">타이머:</label>
-        <select id="mins">
-          <option value="10">10분</option>
-          <option value="12">12분</option>
-          <option value="15" selected>15분</option>
-        </select>
-        <button id="btnStartTimer" class="success">시작</button>
-        <button id="btnPauseTimer" class="ghost">일시정지</button>
-        <button id="btnResetTimer" class="danger">리셋</button>
-        <div class="display" id="timerDisplay">00:00</div>
-      </div>
-
-      <div class="status" id="status"></div>
-
-      <div class="footer" style="margin-top:12px">
-        <button id="btnCopyCurrent" class="ghost icon"><span>📋</span><span>현재 주제 복사</span></button>
-        <button id="btnCopyHistory" class="ghost icon"><span>🧾</span><span>히스토리 복사</span></button>
-        <div class="grow"></div>
-        <button id="btnResetCat" class="gray">현재 카테고리 초기화</button>
-        <button id="btnResetAll" class="danger">전체 초기화</button>
-      </div>
-    </section>
-
-    <aside class="card">
-      <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px">
-        <strong>🕘 히스토리</strong><span class="muted">(최신순)</span>
-      </div>
-      <div class="history" id="history"></div>
-    </aside>
-  </div>
-
-  <!-- 전체 목록 -->
-  <section class="card" id="allList" style="margin-top:16px; display:none">
+  <!-- All list -->
+  <section class="card list-card" id="allList" style="display:none">
     <h3>📋 모든 주제 (카테고리별)</h3>
     <div class="list" id="listContainer"></div>
   </section>
 </div>
 
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<!-- Simple, accessible-only helper -->
+<style>.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0}</style>
 
 <script>
 /* =========================
-   데이터 정의
+   데이터 정의 (사용자 제공 주제)
 ========================= */
 const TOPICS = {
   "인간 존재와 본질": [
@@ -158,7 +127,7 @@ const TOPICS = {
     { q:"국가는 인간의 자유를 보장하는가 vs 억압하는가", refs:"홉스 · 루소 · 푸코" },
     { q:"역사는 진보하는가 vs 반복되는가", refs:"헤겔 · 마르크스 · 니체(영원회귀)" },
     { q:"언론의 자유는 절대적인가 vs 제한될 수 있는가", refs:"표현의 자유 · 해악원리" },
-    { q:"AI와 같은 초지능은 인류의 주인이 될 것인가 vs 도구로 남을 것인가", refs:"AI 거버넌스 · 통제문제" },
+    { q:"AI와 같은 초지능은 인류의 주인이 될 것인가 vs 도구로 남을 것인가", refs:"AI 거버넌스 · 통제 문제" },
   ],
   "삶과 의미": [
     { q:"삶은 본래 의미가 있는가 vs 의미는 인간이 부여하는 것인가", refs:"실존주의 · 허무주의" },
@@ -168,50 +137,36 @@ const TOPICS = {
   ],
 };
 
-// 전역 상태
-const STORAGE_KEY = "seangbal_topics_v1";
-let used = new Set();         // "카테고리|문장"
-let history = [];             // [{cat, q, refs, ts}]
-let current = null;           // {cat,q,refs}
-let rouletteOn = false;
+/* =========================
+   상태 & 요소
+========================= */
+const STORAGE_KEY = "seangbal_debate_lite_v1";
+let used = new Set();    // "카테고리|문장" 형태 키
+let current = null;
 
-// 요소
 const elCategory = document.querySelector("#category");
 const elQuestion = document.querySelector("#questionBox");
 const elCount = document.querySelector("#count");
 const elSubCount = document.querySelector("#subcount");
 const elCurrentCat = document.querySelector("#currentCategory");
 const elCurrentRefs = document.querySelector("#currentRefs");
-const elHistory = document.querySelector("#history");
+const elStatus = document.querySelector("#status");
 const elAllList = document.querySelector("#allList");
 const elListContainer = document.querySelector("#listContainer");
-const elStatus = document.querySelector("#status");
-const elToast = document.querySelector("#toast");
 
-// 버튼/입력
+// 버튼
 const btnPick = document.querySelector("#btnPick");
-const btnShowAll = document.querySelector("#btnShowAll");
-const btnCopyCurrent = document.querySelector("#btnCopyCurrent");
-const btnCopyHistory = document.querySelector("#btnCopyHistory");
+const btnToggleList = document.querySelector("#btnToggleList");
 const btnResetCat = document.querySelector("#btnResetCat");
 const btnResetAll = document.querySelector("#btnResetAll");
-const cbRoulette = document.querySelector("#roulette");
-
-// 타이머
-const selMins = document.querySelector("#mins");
-const btnStartTimer = document.querySelector("#btnStartTimer");
-const btnPauseTimer = document.querySelector("#btnPauseTimer");
-const btnResetTimer = document.querySelector("#btnResetTimer");
-const displayTimer = document.querySelector("#timerDisplay");
-let timerId = null, remainSec = 0, paused = false;
 
 /* =========================
-   초기화 & 상태 복원
+   초기화
 ========================= */
 init();
 
 function init(){
-  // 카테고리 옵션
+  // 카테고리 옵션 채우기
   for(const cat of Object.keys(TOPICS)){
     const opt = document.createElement("option");
     opt.value = cat; opt.textContent = cat;
@@ -219,17 +174,12 @@ function init(){
   }
   // 스토리지 복원
   const saved = loadState();
-  if(saved){
-    used = new Set(saved.used ?? []);
-    history = saved.history ?? [];
-  }
-  // 카운트/리스트 렌더
+  if(saved){ used = new Set(saved.used || []); }
+  // 렌더
   updateCounts();
-  renderHistory();
   renderAllList();
-  // 상태 메시지
   setStatus("준비 완료. 주제를 뽑아보세요!");
-  // 데이터 자가 검증
+  // 간단 검증
   selfValidateData();
 }
 
@@ -237,87 +187,34 @@ function init(){
    스토리지
 ========================= */
 function saveState(){
-  const payload = { used: [...used], history };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ used:[...used] }));
 }
 function loadState(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
-  }catch(e){ console.warn("loadState fail:", e); return null; }
+  }catch(e){ return null; }
 }
 
 /* =========================
-   유틸
+   유틸/렌더
 ========================= */
-function toast(msg){
-  elToast.textContent = msg;
-  elToast.classList.add("show");
-  setTimeout(()=>elToast.classList.remove("show"), 1400);
-}
-function setStatus(msg){ elStatus.textContent = msg || ""; }
-function nowStr(){
-  const d = new Date();
-  const pad = n => String(n).padStart(2,"0");
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}
+function keyOf(cat, q){ return `${cat}|${q}`; }
 function totalCount(){
   return Object.values(TOPICS).reduce((a,arr)=>a+arr.length,0);
 }
 function usedCount(){ return used.size; }
 function subCount(cat){
-  if(cat==="ALL") return { used:usedCount(), total: totalCount() };
+  if(cat==="ALL") return { used: usedCount(), total: totalCount() };
   const total = TOPICS[cat].length;
   const usedInCat = [...used].filter(k => k.startsWith(cat+"|")).length;
   return { used: usedInCat, total };
 }
-function keyOf(cat, q){ return `${cat}|${q}`; }
-
-/* =========================
-   렌더링
-========================= */
 function updateCounts(){
   elCount.textContent = `${usedCount()} / ${totalCount()}`;
   const cat = elCategory.value || "ALL";
   const sc = subCount(cat);
-  elSubCount.textContent = `이 카테고리 진행: ${sc.used} / ${sc.total}`;
-}
-function renderHistory(){
-  elHistory.innerHTML = "";
-  if(history.length===0){
-    const p = document.createElement("p");
-    p.className="muted"; p.textContent="아직 뽑힌 주제가 없습니다.";
-    elHistory.appendChild(p); return;
-  }
-  for(const item of [...history].reverse()){
-    const row = document.createElement("div");
-    row.className = "history-item";
-    const t = document.createElement("div");
-    t.className="title";
-    t.innerHTML = `<strong>${item.q}</strong><br><small>${item.cat} · ${item.refs || "-"}</small>`;
-    const time = document.createElement("small");
-    time.textContent = item.ts;
-    const btn = document.createElement("button");
-    btn.className="ghost"; btn.textContent="복사";
-    btn.onclick = ()=>copyText(`${item.q} (${item.cat}${item.refs? " · "+item.refs:""})`);
-    row.appendChild(t); row.appendChild(time); row.appendChild(btn);
-    elHistory.appendChild(row);
-  }
-}
-function renderAllList(){
-  elListContainer.innerHTML = "";
-  for(const [cat, arr] of Object.entries(TOPICS)){
-    const h = document.createElement("h4"); h.textContent = cat;
-    const ul = document.createElement("ul");
-    for(const it of arr){
-      const li = document.createElement("li");
-      const usedMark = used.has(keyOf(cat,it.q)) ? " · 사용됨" : "";
-      li.textContent = `${it.q}${usedMark}`;
-      ul.appendChild(li);
-    }
-    elListContainer.appendChild(h);
-    elListContainer.appendChild(ul);
-  }
+  elSubCount.textContent = `진행: ${sc.used} / ${sc.total}`;
 }
 function updateCurrentUI(item){
   if(!item){
@@ -330,164 +227,95 @@ function updateCurrentUI(item){
   elCurrentCat.textContent = `카테고리: ${item.cat}`;
   elCurrentRefs.textContent = `연계 키워드: ${item.refs || "-"}`;
 }
+function setStatus(msg){ elStatus.textContent = msg || ""; }
+
+function renderAllList(){
+  elListContainer.innerHTML = "";
+  for(const [cat, arr] of Object.entries(TOPICS)){
+    const h = document.createElement("h4"); h.textContent = cat;
+    const ul = document.createElement("ul");
+    for(const it of arr){
+      const li = document.createElement("li");
+      const usedMark = used.has(keyOf(cat,it.q)) ? " (사용됨)" : "";
+      li.textContent = `${it.q}${usedMark}`;
+      ul.appendChild(li);
+    }
+    elListContainer.appendChild(h);
+    elListContainer.appendChild(ul);
+  }
+}
 
 /* =========================
-   추첨
+   추첨 로직
 ========================= */
 function availablePool(cat){
   const pool = [];
-  const cats = cat==="ALL" ? Object.keys(TOPICS) : [cat];
+  const cats = (cat==="ALL") ? Object.keys(TOPICS) : [cat];
   for(const c of cats){
     for(const it of TOPICS[c]){
-      if(!used.has(keyOf(c, it.q))) pool.push({cat:c, q:it.q, refs:it.refs});
+      if(!used.has(keyOf(c,it.q))) pool.push({cat:c, q:it.q, refs:it.refs});
     }
   }
   return pool;
 }
 function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
-async function pickTopic(){
+function pickTopic(){
   const cat = elCategory.value;
   let pool = availablePool(cat);
-  if(pool.length===0){
-    if(cat!=="ALL"){
+
+  if(pool.length === 0){
+    if(cat !== "ALL"){
+      // 카테고리 소진 시 전체에서 폴백
       pool = availablePool("ALL");
-      if(pool.length===0){
+      if(pool.length === 0){
         setStatus("모든 주제를 소진했습니다. 초기화가 필요해요.");
-        toast("모든 주제를 다 사용했습니다.");
         return;
-      }else{
-        toast("선택한 카테고리 소진 → 전체에서 추첨합니다.");
+      } else {
+        setStatus("선택한 카테고리가 소진되어 전체에서 추첨합니다.");
       }
-    }else{
+    } else {
       setStatus("모든 주제를 소진했습니다. 초기화가 필요해요.");
-      toast("모든 주제를 다 사용했습니다.");
       return;
     }
   }
 
-  if(rouletteOn){
-    await rouletteAnimation(pool.map(p=>p.q));
-  }
   const item = pickRandom(pool);
   current = item;
-
   used.add(keyOf(item.cat, item.q));
-  history.push({ ...item, ts: nowStr() });
   saveState();
 
   updateCounts();
   updateCurrentUI(item);
-  renderHistory();
   renderAllList();
-  setStatus("추첨 완료! 반의토론에 맞게 진행하세요.");
-}
-function rouletteAnimation(strings){
-  return new Promise(resolve=>{
-    const span = 700; // ms
-    const start = performance.now();
-    const tick = now=>{
-      const t = now - start;
-      const idx = Math.floor(Math.random()*strings.length);
-      elQuestion.textContent = strings[idx];
-      if(t < span) requestAnimationFrame(tick);
-      else resolve();
-    };
-    requestAnimationFrame(tick);
-  });
+  setStatus("추첨 완료!");
 }
 
 /* =========================
-   타이머 (Web Audio 알림)
+   초기화 & 토글
 ========================= */
-function startTimer(){
-  const mins = parseInt(selMins.value, 10) || 10;
-  remainSec = mins*60; paused = false;
-  if(timerId) clearInterval(timerId);
-  timerId = setInterval(tick,1000);
-  renderTimer();
-}
-function pauseTimer(){
-  if(!timerId) return;
-  paused = !paused;
-  btnPauseTimer.textContent = paused ? "재개" : "일시정지";
-}
-function resetTimer(){
-  clearInterval(timerId); timerId=null; paused=false; remainSec=0;
-  renderTimer();
-}
-function tick(){
-  if(paused) return;
-  remainSec--;
-  if(remainSec<=0){
-    clearInterval(timerId); timerId=null; remainSec=0;
-    renderTimer(); chime(); toast("⏰ 타임업! 정리로 넘어가요.");
-    return;
-  }
-  renderTimer();
-}
-function renderTimer(){
-  const m = Math.floor(remainSec/60), s = remainSec%60;
-  displayTimer.textContent = `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-}
-function chime(){
-  try{
-    const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.type="sine"; o.frequency.setValueAtTime(880, ctx.currentTime);
-    g.gain.setValueAtTime(0.001, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime+0.01);
-    o.start();
-    setTimeout(()=>{ g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.3); o.stop(ctx.currentTime+0.35); }, 300);
-  }catch(e){}
-}
-
-/* =========================
-   복사 / 초기화
-========================= */
-function copyText(text){
-  navigator.clipboard.writeText(text).then(()=>toast("복사 완료!"));
-}
-function copyCurrent(){
-  if(!current){ toast("현재 주제가 없습니다."); return; }
-  copyText(`${current.q} (${current.cat}${current.refs? " · "+current.refs:""})`);
-}
-function copyHistory(){
-  if(history.length===0){ toast("히스토리가 비어있어요."); return; }
-  const lines = history.map(h=>`${h.ts} - ${h.q} (${h.cat}${h.refs? " · "+h.refs:""})`);
-  copyText(lines.join("\n"));
-}
 function resetCategory(){
   const cat = elCategory.value;
-  if(cat==="ALL"){ toast("카테고리를 선택한 뒤 실행하세요."); return; }
-  let cnt=0;
+  if(cat === "ALL"){ setStatus("카테고리를 선택한 뒤 실행하세요."); return; }
+  let cnt = 0;
   for(const k of [...used]){
     if(k.startsWith(cat+"|")){ used.delete(k); cnt++; }
   }
-  saveState();
-  updateCounts(); renderAllList();
-  toast(`${cat} 초기화: ${cnt}개 해제`);
+  saveState(); updateCounts(); renderAllList(); setStatus(`${cat} 초기화: ${cnt}개 해제`);
 }
 function resetAll(){
-  used = new Set(); history = []; current=null;
-  saveState();
-  updateCounts(); renderHistory(); renderAllList(); updateCurrentUI(null);
-  toast("전체 초기화 완료");
+  used = new Set(); current = null;
+  saveState(); updateCounts(); renderAllList(); updateCurrentUI(null);
+  setStatus("전체 초기화 완료");
+}
+function toggleList(){
+  const show = elAllList.style.display === "none";
+  elAllList.style.display = show ? "block" : "none";
+  document.querySelector("#btnToggleList").textContent = show ? "전체 목록 숨기기" : "전체 목록 토글";
 }
 
 /* =========================
-   전체 목록 토글
-========================= */
-function toggleAllList(){
-  const show = elAllList.style.display==="none";
-  elAllList.style.display = show ? "block":"none";
-  btnShowAll.textContent = show ? "전체 목록 숨기기":"전체 목록 토글";
-}
-
-/* =========================
-   자가 검증 (중복/누락)
+   데이터 자가 검증
 ========================= */
 function selfValidateData(){
   const seen = new Set();
@@ -499,39 +327,27 @@ function selfValidateData(){
       seen.add(k);
     }
   }
-  const total = totalCount();
-  console.group("%c데이터 검증","color:#16a34a;font-weight:700");
-  console.log("총 주제 수:", total);
-  if(dup.length){ console.warn("중복 감지:", dup); } else { console.log("중복 없음 ✅"); }
+  // used 정합성
   const invalidUsed = [...used].filter(k => !seen.has(k));
   if(invalidUsed.length){
-    console.warn("정의에 없는 used 키:", invalidUsed, "→ 자동 제거");
     for(const k of invalidUsed) used.delete(k);
     saveState();
-  } else { console.log("used 정합성 OK ✅"); }
-  console.groupEnd();
+  }
+  // 콘솔에만 간단히 보고
+  console.log("[검증] 총 주제:", seen.size, "| 중복:", dup.length, "| 유효하지 않은 used 제거:", invalidUsed.length);
 }
 
 /* =========================
-   이벤트 바인딩
+   이벤트
 ========================= */
 btnPick.addEventListener("click", pickTopic);
-btnShowAll.addEventListener("click", toggleAllList);
-btnCopyCurrent.addEventListener("click", copyCurrent);
-btnCopyHistory.addEventListener("click", copyHistory);
+btnToggleList.addEventListener("click", toggleList);
 btnResetCat.addEventListener("click", resetCategory);
 btnResetAll.addEventListener("click", resetAll);
-cbRoulette.addEventListener("change", e=>{ rouletteOn = e.target.checked; });
 elCategory.addEventListener("change", ()=>{ updateCounts(); setStatus("카테고리 변경됨."); });
 
-btnStartTimer.addEventListener("click", startTimer);
-btnPauseTimer.addEventListener("click", pauseTimer);
-btnResetTimer.addEventListener("click", resetTimer);
-
-// 접근성: Enter로 빠른 추첨
-document.addEventListener("keydown", e=>{
-  if(e.key==="Enter") pickTopic();
-});
+// Enter로 빠른 뽑기
+document.addEventListener("keydown", e=>{ if(e.key==="Enter") pickTopic(); });
 </script>
 </body>
 </html>
