@@ -54,39 +54,27 @@
     .list{max-height:420px; overflow:auto}
     .list h4{margin:16px 0 8px; color:#111827}
     .list li{margin:6px 0; color:#374151}
-    .timer{
-      display:flex; align-items:center; gap:8px; margin-top:10px;
-    }
+    .timer{display:flex; align-items:center; gap:8px; margin-top:10px}
     .timer .display{
       font-variant-numeric: tabular-nums;
       font-size:1.6rem; font-weight:800; padding:8px 12px; background:#0ea5e9; color:#fff; border-radius:10px;
       min-width:120px; text-align:center;
     }
     .status{margin-top:10px; color:var(--muted); min-height:20px}
-    .lock{display:flex; align-items:center; gap:8px}
-    .pin-field{width:90px; text-align:center}
-    .switch{display:flex; align-items:center; gap:8px}
-    .switch input{transform:scale(1.1)}
     .toast{position:fixed; left:50%; transform:translateX(-50%); bottom:24px; background:#111827; color:#fff;
       padding:10px 14px; border-radius:10px; opacity:0; pointer-events:none; transition:opacity .25s}
     .toast.show{opacity:1}
     .muted{color:var(--muted)}
-    .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0}
   </style>
 </head>
 <body>
 <div class="wrap">
   <h1>🌊 생각의 바다 — 토론 주제 뽑기</h1>
-  <div class="sub">반의토론에 딱 맞춘 주제 추첨기. 중복 방지·타이머·히스토리·조장 잠금까지 한 번에.</div>
+  <div class="sub">토론에 맞춘 주제 추첨기🌊. </div>
 
   <!-- 상단 툴바 -->
   <div class="toolbar" role="region" aria-label="controls">
-    <div class="lock">
-      <label for="pin" class="muted">조장 PIN</label>
-      <input id="pin" class="pin-field" type="password" placeholder="0000" inputmode="numeric" maxlength="8"/>
-      <button class="icon gray" id="btnLock"><span>🔒</span><span id="lockLabel">잠금</span></button>
-    </div>
-    <div class="switch">
+    <div class="switch" style="display:flex; align-items:center; gap:8px">
       <input type="checkbox" id="roulette" />
       <label for="roulette">룰렛 애니메이션</label>
     </div>
@@ -180,11 +168,9 @@ const TOPICS = {
   ],
 };
 
-// 전역 상수/상태
+// 전역 상태
 const STORAGE_KEY = "seangbal_topics_v1";
-const PIN_DEFAULT = "0000"; // ← 필요하면 여기 숫자만 바꿔
-let locked = true;
-let used = new Set();         // "카테고리|문장" 형태
+let used = new Set();         // "카테고리|문장"
 let history = [];             // [{cat, q, refs, ts}]
 let current = null;           // {cat,q,refs}
 let rouletteOn = false;
@@ -210,9 +196,6 @@ const btnCopyHistory = document.querySelector("#btnCopyHistory");
 const btnResetCat = document.querySelector("#btnResetCat");
 const btnResetAll = document.querySelector("#btnResetAll");
 const cbRoulette = document.querySelector("#roulette");
-const pinField = document.querySelector("#pin");
-const btnLock = document.querySelector("#btnLock");
-const lockLabel = document.querySelector("#lockLabel");
 
 // 타이머
 const selMins = document.querySelector("#mins");
@@ -239,10 +222,7 @@ function init(){
   if(saved){
     used = new Set(saved.used ?? []);
     history = saved.history ?? [];
-    locked = (saved.locked ?? true);
   }
-  // 잠금 초기 표시
-  updateLockUI();
   // 카운트/리스트 렌더
   updateCounts();
   renderHistory();
@@ -257,11 +237,7 @@ function init(){
    스토리지
 ========================= */
 function saveState(){
-  const payload = {
-    used: [...used],
-    history,
-    locked,
-  };
+  const payload = { used: [...used], history };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
 }
 function loadState(){
@@ -288,9 +264,7 @@ function nowStr(){
 function totalCount(){
   return Object.values(TOPICS).reduce((a,arr)=>a+arr.length,0);
 }
-function usedCount(){
-  return used.size;
-}
+function usedCount(){ return used.size; }
 function subCount(cat){
   if(cat==="ALL") return { used:usedCount(), total: totalCount() };
   const total = TOPICS[cat].length;
@@ -370,18 +344,12 @@ function availablePool(cat){
   }
   return pool;
 }
-function pickRandom(arr){
-  return arr[Math.floor(Math.random()*arr.length)];
-}
+function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
 async function pickTopic(){
-  if(locked){
-    toast("잠금 해제 후 사용하세요 (PIN)");
-    return;
-  }
   const cat = elCategory.value;
   let pool = availablePool(cat);
   if(pool.length===0){
-    // 자동 폴백: 전체에서 시도
     if(cat!=="ALL"){
       pool = availablePool("ALL");
       if(pool.length===0){
@@ -404,7 +372,6 @@ async function pickTopic(){
   const item = pickRandom(pool);
   current = item;
 
-  // 사용 처리
   used.add(keyOf(item.cat, item.q));
   history.push({ ...item, ts: nowStr() });
   saveState();
@@ -413,11 +380,11 @@ async function pickTopic(){
   updateCurrentUI(item);
   renderHistory();
   renderAllList();
-  setStatus("추첨 완료! 반의토론에 맞게 입장 배정(본래의 반대) 진행하세요.");
+  setStatus("추첨 완료! 반의토론에 맞게 진행하세요.");
 }
 function rouletteAnimation(strings){
   return new Promise(resolve=>{
-    const span = 700; // 전체 애니메이션 ms
+    const span = 700; // ms
     const start = performance.now();
     const tick = now=>{
       const t = now - start;
@@ -435,8 +402,7 @@ function rouletteAnimation(strings){
 ========================= */
 function startTimer(){
   const mins = parseInt(selMins.value, 10) || 10;
-  remainSec = mins*60;
-  paused = false;
+  remainSec = mins*60; paused = false;
   if(timerId) clearInterval(timerId);
   timerId = setInterval(tick,1000);
   renderTimer();
@@ -476,36 +442,6 @@ function chime(){
     o.start();
     setTimeout(()=>{ g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.3); o.stop(ctx.currentTime+0.35); }, 300);
   }catch(e){}
-}
-
-/* =========================
-   잠금(PIN)
-========================= */
-function updateLockUI(){
-  btnPick.disabled = locked;
-  btnResetAll.disabled = locked;
-  btnResetCat.disabled = locked;
-  btnStartTimer.disabled = locked;
-  btnPauseTimer.disabled = locked;
-  btnResetTimer.disabled = locked;
-  lockLabel.textContent = locked ? "잠금" : "해제됨";
-  btnLock.classList.toggle("gray", locked);
-  btnLock.classList.toggle("success", !locked);
-}
-function toggleLock(){
-  if(locked){
-    const pin = pinField.value || PIN_DEFAULT;
-    if(pin === PIN_DEFAULT || pin.length>0){
-      locked = false;
-      toast("🔓 잠금 해제");
-    }else{
-      toast("PIN을 입력하세요.");
-      return;
-    }
-  }else{
-    locked = true; toast("🔒 잠금");
-  }
-  saveState(); updateLockUI();
 }
 
 /* =========================
@@ -567,7 +503,6 @@ function selfValidateData(){
   console.group("%c데이터 검증","color:#16a34a;font-weight:700");
   console.log("총 주제 수:", total);
   if(dup.length){ console.warn("중복 감지:", dup); } else { console.log("중복 없음 ✅"); }
-  // used가 존재하지만 정의에 없는 항목이 있는지 체크
   const invalidUsed = [...used].filter(k => !seen.has(k));
   if(invalidUsed.length){
     console.warn("정의에 없는 used 키:", invalidUsed, "→ 자동 제거");
@@ -593,11 +528,9 @@ btnStartTimer.addEventListener("click", startTimer);
 btnPauseTimer.addEventListener("click", pauseTimer);
 btnResetTimer.addEventListener("click", resetTimer);
 
-btnLock.addEventListener("click", toggleLock);
-
-// 접근성: Enter로 픽
+// 접근성: Enter로 빠른 추첨
 document.addEventListener("keydown", e=>{
-  if(e.key==="Enter" && !locked) pickTopic();
+  if(e.key==="Enter") pickTopic();
 });
 </script>
 </body>
