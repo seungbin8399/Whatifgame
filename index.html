@@ -1,405 +1,218 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>생각의 바다 – 질문 게임</title>
+  <title>생각의 바다 — 간단 진행툴</title>
   <style>
-    :root{
-      --bg:#0f172a; --panel:#111827; --muted:#94a3b8; --text:#e5e7eb;
-      --brand:#22d3ee; --brand2:#60a5fa; --accent:#a78bfa; --ok:#34d399; --warn:#fbbf24;
-      --shadow:0 10px 30px rgba(0,0,0,.45); --radius:18px
-    }
+    :root{--bg:#0b1020;--card:#121a2f;--text:#eaf0ff;--border:rgba(255,255,255,.08);--muted:#a9b8ff;}
     *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",Helvetica,Arial; background:radial-gradient(1200px 700px at 10% 0%, #0b1229, #0a1022 55%, #0a0f1f 70%, #070b17 100%); color:var(--text)}
-    .wrap{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 16px}
-    .title{font-size:clamp(22px,4vw,34px);font-weight:800}
-    .subtitle{color:var(--muted);font-size:13px}
-    .toolbar{display:flex;gap:8px;flex-wrap:wrap}
-    button{appearance:none;border:none;color:var(--text);background:rgba(255,255,255,.06);padding:10px 12px;border-radius:12px;font-weight:700;cursor:pointer;box-shadow:var(--shadow);transition:transform .06s ease, background .2s ease}
-    button:hover{transform:translateY(-1px)}
-    button:active{transform:translateY(0)}
-    .primary{background:linear-gradient(135deg, rgba(34,211,238,.18), rgba(96,165,250,.18))}
-    .ghost{background:rgba(255,255,255,.06)}
-    .danger{background:linear-gradient(135deg, rgba(244,114,182,.2), rgba(167,139,250,.18))}
-
-    .panel{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
-
-    .grid{display:grid;grid-template-columns:1fr 320px;gap:16px}
-    @media (max-width:900px){.grid{grid-template-columns:1fr}}
-
-    /* Question card */
-    .q{display:flex;flex-direction:column;gap:14px}
-    .q-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
-    .badge{font-size:12px;color:#0b1224;background:linear-gradient(135deg, #22d3ee, #60a5fa);padding:6px 10px;border-radius:999px;font-weight:800}
-    .q-text{font-size:clamp(20px,3.8vw,32px);font-weight:800;line-height:1.25}
-    .q-sub{color:var(--muted);font-size:13px}
-
-    .controls{display:flex;flex-wrap:wrap;gap:8px}
-    .timer{display:flex;align-items:center;gap:8px;color:var(--muted)}
-    .progress{height:8px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
-    .bar{height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--brand2));transition:width .2s ease}
-
-    /* side */
-    .side{display:flex;flex-direction:column;gap:12px}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:900px;margin:0 auto;padding:18px}
+    h1{font-size:clamp(22px,3.2vw,32px);margin:0 0 8px}
     .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    select,input[type="search"],input[type="number"]{background:#0b1020;color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px}
-    label{font-size:13px;color:var(--muted)}
-    .chips{display:flex;gap:6px;flex-wrap:wrap}
-    .chip{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.07);font-size:12px;cursor:pointer}
-    .chip.on{background:linear-gradient(135deg, rgba(34,211,238,.22), rgba(96,165,250,.22))}
-
-    .list{max-height:280px;overflow:auto;border:1px dashed rgba(255,255,255,.12);border-radius:12px;padding:10px}
-    .mini{font-size:12px;color:var(--muted)}
-
-    dialog{border:none;border-radius:16px;padding:0;background:#0b1224;color:var(--text);max-width:820px;width:min(92vw,820px);box-shadow:var(--shadow)}
-    .dlg-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.07)}
-    .dlg-body{padding:16px}
-    .dlg-foot{padding:12px 16px;display:flex;justify-content:flex-end;gap:8px;border-top:1px solid rgba(255,255,255,.07)}
-    textarea{width:100%;min-height:320px;background:#0b1020;color:var(--text);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin:10px 0}
+    button{background:#2a3a6a;color:var(--text);border:1px solid var(--border);padding:9px 12px;border-radius:10px;cursor:pointer}
+    button.ghost{background:transparent}
+    textarea, input{width:100%;background:#0f1630;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px}
+    .muted{color:var(--muted);font-size:13px}
+    ul{margin:8px 0 0 18px}
+    .grid{display:grid;gap:10px}
+    .two{grid-template-columns:1fr 1fr}
+    @media (max-width:780px){.two{grid-template-columns:1fr}}
+    .list{display:flex;flex-wrap:wrap;gap:6px}
+    .chip{border:1px solid var(--border);padding:5px 8px;border-radius:999px;background:#0e1530}
+    .mono{font-family:ui-monospace,Menlo,monospace}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <div>
-        <div class="title">생각의 바다 – 질문 게임</div>
-        <div class="subtitle">키보드: Space=다음, ←/→=카테고리 이동, F=즐겨찾기, T=타이머, E=편집, L=사용문항보기</div>
-      </div>
-      <div class="toolbar">
-        <button id="btnPrev" class="ghost" title="이전 질문">◀ 이전</button>
-        <button id="btnNext" class="primary" title="다음 질문 (Space)">다음 ▶</button>
-        <button id="btnFav" class="ghost" title="즐겨찾기/해제 (F)">★ 즐겨찾기</button>
-        <button id="btnTimer" class="ghost" title="타이머 토글 (T)">⏱ 타이머: 끔</button>
-        <label class="ghost" style="padding:8px 10px;display:flex;align-items:center;gap:6px">⏲
-          <input id="seconds" type="number" min="10" max="300" value="60" style="width:70px;background:transparent;border:none;color:var(--text);font-weight:800"> s
-        </label>
-        <button id="btnExport" class="ghost" title="즐겨찾기/사용문항 내보내기">⬇︎ 결과</button>
-        <button id="btnEdit" class="ghost" title="질문 편집 (E)">✏️ 편집</button>
-      </div>
-    </header>
+    <h1>🌊 생각의 바다 — 간단 진행툴</h1>
+    <p class="muted">밸런스게임 뽑기 · 키워드 뽑기 · 조 섞기(4인 1조). 로컬에서만 동작, 설치/로그인 없이 사용.</p>
 
-    <div class="grid">
-      <section class="panel q" aria-live="polite">
-        <div class="q-head">
-          <span class="badge" id="badge">카테고리</span>
-          <span id="meta" class="mini">0 / 0</span>
-        </div>
-        <div id="qText" class="q-text">문항을 불러오는 중…</div>
-        <div class="q-sub" id="qSub">깊이 질문: <span id="deep">(다음 질문마다 달라져요)</span></div>
-        <div class="progress"><div id="bar" class="bar"></div></div>
-        <div class="controls">
-          <button id="btnDeep" class="ghost" title="새로운 깊이 질문 제안">🔎 깊이 질문 제안</button>
-          <button id="btnPass" class="ghost" title="이번 질문 패스 (1회 권장)">⏭ 패스</button>
-          <button id="btnFull" class="ghost" title="전체화면">⛶ 전체화면</button>
-        </div>
-        <div class="timer" id="timerRow" hidden>
-          남은 시간: <strong id="remain">01:00</strong>
-          <span class="mini">(끝나면 자동으로 다음 질문)</span>
-        </div>
-      </section>
+    <!-- 밸런스게임 -->
+    <section class="card">
+      <h2>1) 밸런스게임 주제 뽑기</h2>
+      <div class="row">
+        <button id="pickBG">무작위 1개 뽑기</button>
+        <button id="pickBG3" class="ghost">무작위 3개</button>
+        <button id="copyBG" class="ghost">복사</button>
+      </div>
+      <div id="bgResult" class="list" style="margin-top:8px"></div>
+      <details style="margin-top:10px">
+        <summary class="muted">기본 질문 보기 / 수정</summary>
+        <ul id="bgPreview"></ul>
+      </details>
+    </section>
 
-      <aside class="side">
-        <section class="panel">
-          <div class="row" style="justify-content:space-between">
-            <label>카테고리</label>
-            <div class="chips" id="catChips"></div>
+    <!-- 키워드 토론 -->
+    <section class="card">
+      <h2>2) 키워드 토론 주제 뽑기</h2>
+      <div class="row">
+        <button id="pickKW2">무작위 2개</button>
+        <button id="pickKW1" class="ghost">무작위 1개</button>
+        <button id="copyKW" class="ghost">복사</button>
+      </div>
+      <div id="kwResult" class="list" style="margin-top:8px"></div>
+      <details style="margin-top:10px">
+        <summary class="muted">기본 키워드/질문 보기</summary>
+        <ul id="kwPreview"></ul>
+      </details>
+    </section>
+
+    <!-- 조 섞기 -->
+    <section class="card">
+      <h2>3) 조 섞기 (4인 1조)</h2>
+      <div class="grid two">
+        <div>
+          <label class="muted">참여자 (줄바꿈으로 구분)</label>
+          <textarea id="names" rows="8"></textarea>
+          <div class="row" style="margin-top:8px">
+            <button id="shuffle">섞어서 배정</button>
+            <button id="copyTeams" class="ghost">결과 복사</button>
           </div>
-          <div class="row">
-            <label>난이도</label>
-            <div class="chips" id="lvChips"></div>
-          </div>
-          <div class="row">
-            <label>검색</label>
-            <input type="search" id="search" placeholder="키워드로 질문 찾기" />
-          </div>
-          <div class="row">
-            <label>정렬</label>
-            <select id="sort">
-              <option value="default">기본</option>
-              <option value="fav">즐겨찾기 우선</option>
-              <option value="used">사용 안 한 질문 우선</option>
-            </select>
-          </div>
-        </section>
-        <section class="panel">
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <strong>질문 목록</strong>
-            <span class="mini" id="countInfo"></span>
-          </div>
-          <div class="list" id="list"></div>
-        </section>
-        <section class="panel">
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <strong>사용한 질문</strong>
-            <button id="btnLog" class="ghost">보기/숨기기 (L)</button>
-          </div>
-          <div class="list" id="log" hidden></div>
-        </section>
-      </aside>
-    </div>
+          <p class="muted">※ 인원수 4로 나누어 떨어지지 않으면 마지막 조는 3명으로 구성됩니다.</p>
+        </div>
+        <div>
+          <div id="teams"></div>
+        </div>
+      </div>
+    </section>
+
+    <p class="muted">© 생각의 바다 — 심플 버전</p>
   </div>
 
-  <!-- 편집 모달 -->
-  <dialog id="editDlg">
-    <div class="dlg-head">
-      <strong>질문 편집</strong>
-      <button id="closeEdit" class="ghost">닫기 ✕</button>
-    </div>
-    <div class="dlg-body">
-      <p class="mini">아래 JSON 배열을 수정하세요. 각 항목은 <code>{ q, cat, level }</code> 형식입니다. <code>cat</code>은 카테고리(예: "철학"), <code>level</code>은 1~3.</p>
-      <textarea id="editor"></textarea>
-    </div>
-    <div class="dlg-foot">
-      <button id="saveEdit" class="primary">저장</button>
-    </div>
-  </dialog>
-
   <script>
-    // ===== 기본 데이터 =====
-    const DEFAULT = [
-      { q: '내 인생에 24시간만 남았다면 무엇을 할까?', cat:'철학', level:2 },
-      { q: '만약 좀비 사태가 온다면, 누구와 어디로 살아남을까?', cat:'상상', level:1 },
-      { q: '사랑은 감정일까, 선택일까?', cat:'관계', level:2 },
-      { q: '최근 나를 울린 한 문장(시/책/대사)은?', cat:'문학', level:1 },
-      { q: '용기와 무모함의 경계는 어디일까?', cat:'철학', level:3 },
-      { q: '좋은 우정이란 무엇일까? 사례를 들어 이야기해보자.', cat:'관계', level:1 },
-      { q: '돈이 자유를 줄까, 구속을 줄까?', cat:'현실', level:2 },
-      { q: '혼자 있는 시간: 외로움인가, 자유인가?', cat:'자기', level:1 },
-      { q: '최근의 후회 한 가지와, 그로부터 배운 점은?', cat:'자기', level:2 },
-      { q: '기억을 지울 수 있다면 지우고 싶은 기억이 있나?', cat:'철학', level:3 },
-      { q: '나에게 “성장”이란 어떤 장면으로 기억될까?', cat:'자기', level:2 },
-      { q: '완벽한 하루를 설계한다면 무엇으로 채울까?', cat:'상상', level:1 },
-      { q: '사과와 용서 중 더 어려운 것은 무엇일까? 이유는?', cat:'관계', level:2 },
-      { q: '인공지능이 내 일을 대체한다면, 나는 무엇을 하고 있을까?', cat:'시사', level:2 },
-      { q: '죽음이 우리 삶에 주는 효용은 무엇일까?', cat:'철학', level:3 }
+    // ===== 데이터 =====
+    const BG = [
+      ["평생 하루에 3시간만 자고 체력 풀충전","하루에 12시간 자야 겨우 버팀"],
+      ["친구와 1년 동안 연락 두절","매일 1시간 통화"],
+      ["내가 사랑하는 사람과만 남는 세상","나를 사랑하는 사람과만 남는 세상"],
+      ["10년간 같은 도시에서 안정적으로 살기","3년마다 새로운 나라로 이사"],
+      ["모두가 내 생각을 읽음","내가 모두의 생각을 읽음"],
+      ["월 300, 시간 자유 X","월 150, 시간 완전 자유"],
+      ["평생 술/카페인 금지","평생 SNS 금지"],
+      ["과거로 1번 시간여행","미래로 1번 시간여행"],
     ];
 
-    const DEEP_SUGGEST = [
-      '그렇게 느낀 결정적인 순간은 언제였어?',
-      '그 생각이 생긴 배경에는 무엇이 있었을까?',
-      '시간이 지나면 이 답은 바뀔까?',
-      '비슷한 상황에서의 너 경험 하나만 더 들려줘.',
-      '만약 가까운 친구에게 조언한다면 뭐라고 할까?',
-      '반대 입장에서 보면 어떻게 들릴까?'
+    const KW = [
+      {name:'행복', qs:['행복은 돈으로 살 수 있나요?','가장 최근의 소소한 행복은?']},
+      {name:'돈', qs:['돈은 자유를 주나요, 구속하나요?','얼마가 있으면 “충분”한가요?']},
+      {name:'자유', qs:['자유는 무엇의 부재인가요?','자유와 책임의 균형은?']},
+      {name:'관계', qs:['관계가 나를 구속한다고 느낄 때는?','좋은 관계의 최소조건은?']},
+      {name:'죽음', qs:['죽음 인식이 삶을 어떻게 바꾸나요?','임종 때 가장 후회할 일은?']},
+      {name:'성장', qs:['성장의 기준은 무엇인가요?','정체기에서의 대처는?']},
     ];
-
-    // ===== 상태 =====
-    let state = {
-      items: [],
-      idx: 0,
-      used: [], // index list
-      fav: {},  // index:true
-      cat: '전체',
-      lv: '전체',
-      query: '',
-      sort: 'default',
-      timerOn: false,
-      seconds: 60,
-      ticking: null
-    };
-
-    // ===== 요소 =====
-    const qText = document.getElementById('qText');
-    const qSub = document.getElementById('qSub');
-    const deepSpan = document.getElementById('deep');
-    const bar = document.getElementById('bar');
-    const badge = document.getElementById('badge');
-    const meta = document.getElementById('meta');
-
-    const catChips = document.getElementById('catChips');
-    const lvChips = document.getElementById('lvChips');
-    const list = document.getElementById('list');
-    const log = document.getElementById('log');
-
-    const search = document.getElementById('search');
-    const sortSel = document.getElementById('sort');
-
-    const btnPrev = document.getElementById('btnPrev');
-    const btnNext = document.getElementById('btnNext');
-    const btnFav = document.getElementById('btnFav');
-    const btnTimer = document.getElementById('btnTimer');
-    const secondsInput = document.getElementById('seconds');
-    const btnExport = document.getElementById('btnExport');
-    const btnEdit = document.getElementById('btnEdit');
-    const btnDeep = document.getElementById('btnDeep');
-    const btnPass = document.getElementById('btnPass');
-    const btnFull = document.getElementById('btnFull');
-    const btnLog = document.getElementById('btnLog');
-
-    const timerRow = document.getElementById('timerRow');
-    const remain = document.getElementById('remain');
-
-    // 편집 모달
-    const editDlg = document.getElementById('editDlg');
-    const editor = document.getElementById('editor');
-    const closeEdit = document.getElementById('closeEdit');
-    const saveEdit = document.getElementById('saveEdit');
 
     // ===== 유틸 =====
-    const pad = (n)=> String(n).padStart(2,'0');
-    const fmt = (s)=>{const m=Math.floor(s/60), ss=s%60; return `${pad(m)}:${pad(ss)}`}
-    const uniq = (arr)=> [...new Set(arr)];
-
-    function load(){
-      try{
-        const saved = JSON.parse(localStorage.getItem('sb_question_state')||'{}');
-        state = Object.assign(state, saved);
-        if(!Array.isArray(state.items) || state.items.length===0) state.items = DEFAULT;
-      }catch(e){ state.items = DEFAULT; }
-      if(typeof state.seconds !== 'number') state.seconds = 60;
-      secondsInput.value = state.seconds;
-    }
-    function save(){
-      localStorage.setItem('sb_question_state', JSON.stringify({
-        items: state.items, idx: state.idx, used: state.used, fav: state.fav,
-        cat: state.cat, lv: state.lv, query: state.query, sort: state.sort,
-        timerOn: state.timerOn, seconds: state.seconds
-      }));
-    }
-
-    function cats(){ return ['전체', ...uniq(state.items.map(i=>i.cat))]; }
-    function levels(){ return ['전체', '1', '2', '3']; }
-
-    function filtered(){
-      let arr = state.items.map((it, i)=> ({...it, i, used: state.used.includes(i), fav: !!state.fav[i]}));
-      if(state.cat!=='전체') arr = arr.filter(x=>x.cat===state.cat);
-      if(state.lv!=='전체') arr = arr.filter(x=> String(x.level)===String(state.lv));
-      if(state.query) arr = arr.filter(x=> x.q.toLowerCase().includes(state.query.toLowerCase()));
-      if(state.sort==='fav') arr.sort((a,b)=> (b.fav - a.fav) || (a.used - b.used));
-      else if(state.sort==='used') arr.sort((a,b)=> (a.used - b.used));
-      return arr;
-    }
-
-    function setIdxByVisibleList(offset=0){
-      const arr = filtered();
-      if(arr.length===0){
-        qText.textContent='조건에 맞는 질문이 없습니다. 필터를 조정해보세요.'; qSub.textContent=''; deepSpan.textContent='—'; badge.textContent='—'; meta.textContent='0 / 0'; bar.style.width='0%'; return;
+    const $ = (sel, root=document) => root.querySelector(sel);
+    function shuffleArray(arr){
+      const a = arr.slice();
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
       }
-      let pos = arr.findIndex(x=> x.i===state.idx);
-      if(pos===-1) pos = 0;
-      pos = Math.max(0, Math.min(arr.length-1, pos+offset));
-      show(arr[pos].i, arr, pos);
+      return a;
+    }
+    function copyText(t){ navigator.clipboard.writeText(t).then(()=> alert('복사 완료!')); }
+
+    // ===== 밸런스게임 =====
+    function renderBGPreview(){
+      const ul = $('#bgPreview'); ul.innerHTML='';
+      BG.forEach((q,i)=>{ const li=document.createElement('li'); li.textContent = `Q${i+1}. ${q[0]}  vs  ${q[1]}`; ul.appendChild(li); });
+    }
+    function pickBG(n=1){
+      const picks = shuffleArray(BG).slice(0,n);
+      const holder = $('#bgResult'); holder.innerHTML='';
+      picks.forEach(([a,b],i)=>{
+        const div=document.createElement('div'); div.className='chip';
+        div.textContent = `Q${i+1}: ${a}  vs  ${b}`;
+        holder.appendChild(div);
+      });
+      return picks.map(([a,b],i)=>`Q${i+1}: ${a} vs ${b}`).join('
+');
     }
 
-    function show(i, arr=null, pos=null){
-      state.idx = i;
-      const it = state.items[i];
-      const listArr = arr || filtered();
-      const indexInList = (pos!=null? pos : listArr.findIndex(x=>x.i===i));
-
-      qText.textContent = it.q;
-      badge.textContent = `${it.cat} · Lv${it.level}`;
-      deepSpan.textContent = DEEP_SUGGEST[Math.floor(Math.random()*DEEP_SUGGEST.length)];
-      meta.textContent = `${indexInList+1} / ${listArr.length}`;
-      bar.style.width = `${(indexInList)/(Math.max(1,listArr.length-1))*100}%`;
-
-      renderList();
-      save();
+    // ===== 키워드 =====
+    function renderKWPreview(){
+      const ul = $('#kwPreview'); ul.innerHTML='';
+      KW.forEach((k,i)=>{
+        const li=document.createElement('li');
+        li.innerHTML = `<strong>${k.name}</strong> — ${k.qs.join(' / ')}`;
+        ul.appendChild(li);
+      });
+    }
+    function pickKW(n=2){
+      const picks = shuffleArray(KW).slice(0,n);
+      const holder = $('#kwResult'); holder.innerHTML='';
+      picks.forEach((k)=>{
+        const div=document.createElement('div'); div.className='chip';
+        div.textContent = `${k.name}: ${k.qs[0]}`;
+        holder.appendChild(div);
+      });
+      return picks.map(k=>`${k.name}: ${k.qs.join(' / ')}`).join('
+');
     }
 
-    function markUsed(i){ if(!state.used.includes(i)){ state.used.push(i); save(); renderLog(); } }
-    function toggleFav(i){ state.fav[i] = !state.fav[i]; save(); renderList(); }
+    // ===== 조 섞기 (4인 1조) =====
+    const DEFAULT_NAMES = [
+      '유승빈','김상권','권동국','박유정','변서호','손가은','심원섭','이이강','이주은','정용진','최승아','하경덕','오승빈','유진','이명비','이종화','김환희','신재민','최유리'
+    ];
 
-    function renderFilters(){
-      catChips.innerHTML = cats().map(c=>`<span class="chip ${state.cat===c?'on':''}" data-cat="${c}">${c}</span>`).join('');
-      lvChips.innerHTML = levels().map(l=>`<span class="chip ${String(state.lv)===String(l)?'on':''}" data-lv="${l}">${l==='전체'?'전체':('Lv'+l)}</span>`).join('');
+    function groupByFour(list){
+      const shuffled = shuffleArray(list.filter(x=>x && x.trim()));
+      const teams=[]; for(let i=0;i<shuffled.length;i+=4){ teams.push(shuffled.slice(i,i+4)); }
+      return teams;
     }
 
-    function renderList(){
-      const arr = filtered();
-      countInfo.textContent = `${arr.length}개`;
-      list.innerHTML = arr.map(x=>`
-        <div class="row" style="justify-content:space-between;align-items:center;margin:6px 0;padding:8px;border-radius:10px;background:rgba(255,255,255,.04)">
-          <div class="mini" style="color:${x.used?'#93c5fd':'#a7f3d0'}">${x.used?'사용됨':'새 질문'}</div>
-          <button data-i="${x.i}" class="ghost" style="flex:1;text-align:left;margin:0 8px">${x.q}</button>
-          <button data-fav="${x.i}" class="ghost" title="즐겨찾기">${x.fav?'★':'☆'}</button>
-        </div>
-      `).join('');
+    function renderTeams(teams){
+      const root = $('#teams'); root.innerHTML='';
+      teams.forEach((t,idx)=>{
+        const box=document.createElement('div'); box.className='card';
+        const title=document.createElement('div'); title.innerHTML = `<strong>${idx+1}조</strong> <span class="muted">(${t.length}명)</span>`;
+        const ul=document.createElement('ul'); t.forEach(n=>{ const li=document.createElement('li'); li.textContent=n; ul.appendChild(li); });
+        box.appendChild(title); box.appendChild(ul); root.appendChild(box);
+      });
+      if(teams.length && teams[teams.length-1].length!==4){
+        const p=document.createElement('p'); p.className='muted';
+        p.textContent='마지막 조는 3명입니다. 필요 시 진행자/게스트를 추가하거나 조 합치기를 고려하세요.';
+        root.appendChild(p);
+      }
     }
 
-    function renderLog(){
-      log.innerHTML = state.used.map((i, n)=>{
-        const it = state.items[i];
-        return `<div class="mini">${n+1}. [${it.cat}/Lv${it.level}] ${it.q}</div>`;
-      }).join('');
-    }
+    // ===== 이벤트 바인딩 =====
+    window.addEventListener('DOMContentLoaded', ()=>{
+      $('#names').value = DEFAULT_NAMES.join('
+');
+      renderBGPreview();
+      renderKWPreview();
 
-    function startTimer(){ stopTimer(); state.timerOn=true; timerRow.hidden=false; let s=state.seconds; remain.textContent=fmt(s); state.ticking=setInterval(()=>{ s--; if(s<0){ stopTimer(); next(); return;} remain.textContent=fmt(s); },1000); btnTimer.textContent='⏱ 타이머: 켬'; save(); }
-    function stopTimer(){ if(state.ticking){clearInterval(state.ticking); state.ticking=null;} timerRow.hidden=true; state.timerOn=false; btnTimer.textContent='⏱ 타이머: 끔'; save(); }
-    function restartTimerIfOn(){ if(state.timerOn) startTimer(); }
+      $('#pickBG').addEventListener('click', ()=> pickBG(1));
+      $('#pickBG3').addEventListener('click', ()=> pickBG(3));
+      $('#copyBG').addEventListener('click', ()=> copyText($('#bgResult').textContent.trim()));
 
-    function next(){ markUsed(state.idx); setIdxByVisibleList(+1); restartTimerIfOn(); }
-    function prev(){ setIdxByVisibleList(-1); restartTimerIfOn(); }
+      $('#pickKW2').addEventListener('click', ()=> pickKW(2));
+      $('#pickKW1').addEventListener('click', ()=> pickKW(1));
+      $('#copyKW').addEventListener('click', ()=> copyText($('#kwResult').textContent.trim()));
 
-    function exportData(){
-      const favItems = Object.entries(state.fav).filter(([k,v])=>v).map(([k])=> state.items[Number(k)].q);
-      const usedItems = state.used.map(i=> state.items[i].q);
-      const obj = { fav: favItems, used: usedItems };
-      const blob = new Blob([JSON.stringify(obj,null,2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download='question_game_export.json'; a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function openEditor(){ editor.value = JSON.stringify(state.items, null, 2); editDlg.showModal(); }
-    function saveEditor(){
-      try{
-        const arr = JSON.parse(editor.value);
-        if(!Array.isArray(arr)) throw new Error('배열이 아닙니다.');
-        if(!arr.every(x=> x && typeof x.q==='string' && typeof x.cat==='string' && (x.level>=1 && x.level<=3))) throw new Error('각 항목은 { q, cat, level(1~3) } 형식이어야 합니다.');
-        state.items = arr; state.idx = 0; state.used = []; save(); renderFilters(); setIdxByVisibleList(0); editDlg.close();
-      }catch(e){ alert('저장 실패: '+e.message); }
-    }
-
-    // ===== 이벤트 =====
-    document.getElementById('countInfo');
-    const countInfo = document.getElementById('countInfo');
-
-    catChips.addEventListener('click', (e)=>{ const c = e.target.dataset.cat; if(!c) return; state.cat=c; save(); renderFilters(); setIdxByVisibleList(0); });
-    lvChips.addEventListener('click', (e)=>{ const v = e.target.dataset.lv; if(!v) return; state.lv=v; save(); renderFilters(); setIdxByVisibleList(0); });
-
-    list.addEventListener('click', (e)=>{
-      const i = e.target.getAttribute('data-i');
-      const f = e.target.getAttribute('data-fav');
-      if(i!=null){ show(Number(i)); }
-      if(f!=null){ toggleFav(Number(f)); }
+      $('#shuffle').addEventListener('click', ()=>{
+        const names = $('#names').value.split(/
+|,|;/).map(x=>x.trim()).filter(Boolean);
+        const teams = groupByFour(names);
+        renderTeams(teams);
+      });
+      $('#copyTeams').addEventListener('click', ()=>{
+        const boxes = Array.from($('#teams').querySelectorAll('.card'));
+        if(!boxes.length){ alert('먼저 섞기를 눌러 팀을 만들어요!'); return; }
+        const lines = boxes.map((box,i)=>{
+          const who = Array.from(box.querySelectorAll('li')).map(li=>li.textContent).join(', ');
+          const cnt = box.querySelector('.muted').textContent.replace(/[()명]/g,'');
+          return `${i+1}조 (${cnt}명): ${who}`;
+        }).join('
+');
+        copyText(lines);
+      });
     });
-
-    search.addEventListener('input', ()=>{ state.query = search.value.trim(); save(); setIdxByVisibleList(0); });
-    sortSel.addEventListener('change', ()=>{ state.sort = sortSel.value; save(); setIdxByVisibleList(0); });
-
-    btnNext.addEventListener('click', next);
-    btnPrev.addEventListener('click', prev);
-    btnFav.addEventListener('click', ()=>{ toggleFav(state.idx); });
-    btnTimer.addEventListener('click', ()=> state.timerOn? stopTimer(): startTimer());
-    secondsInput.addEventListener('change', (e)=>{ const v=Math.max(10, Math.min(300, parseInt(e.target.value||60))); state.seconds=v; e.target.value=v; save(); restartTimerIfOn(); });
-    btnExport.addEventListener('click', exportData);
-    btnEdit.addEventListener('click', openEditor);
-    closeEdit.addEventListener('click', ()=> editDlg.close());
-    saveEdit.addEventListener('click', saveEditor);
-    btnDeep.addEventListener('click', ()=>{ deepSpan.textContent = DEEP_SUGGEST[Math.floor(Math.random()*DEEP_SUGGEST.length)]; });
-    btnPass.addEventListener('click', ()=> next());
-    btnFull.addEventListener('click', ()=>{ document.documentElement.requestFullscreen?.(); });
-    btnLog.addEventListener('click', ()=>{ log.hidden = !log.hidden; renderLog(); });
-
-    window.addEventListener('keydown', (e)=>{
-      if(editDlg.open) return; // 편집 중엔 단축키 무시
-      if(e.key===' '||e.key==='Spacebar'){ e.preventDefault(); next(); }
-      else if(e.key==='ArrowLeft'){ prev(); }
-      else if(e.key==='ArrowRight'){ next(); }
-      else if(e.key==='f'||e.key==='F'){ toggleFav(state.idx); }
-      else if(e.key==='t'||e.key==='T'){ state.timerOn? stopTimer(): startTimer(); }
-      else if(e.key==='e'||e.key==='E'){ openEditor(); }
-      else if(e.key==='l'||e.key==='L'){ log.hidden = !log.hidden; renderLog(); }
-    });
-
-    // ===== 초기화 =====
-    load();
-    renderFilters();
-    setIdxByVisibleList(0);
   </script>
 </body>
 </html>
