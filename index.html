@@ -5,15 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>생각의 바다 — 간단 진행툴</title>
   <style>
-    :root{--bg:#0b1020;--card:#121a2f;--text:#eaf0ff;--border:rgba(255,255,255,.08);--muted:#a9b8ff;}
+    :root{--bg:#0b1020;--card:#121a2f;--text:#eaf0ff;--border:rgba(255,255,255,.08);--muted:#a9b8ff;--chip:#0e1530;--accent:#5eead4}
     *{box-sizing:border-box}
-    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--text)}
+    html,body{height:100%}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--text);position:relative;overflow-x:hidden}
+    /* floating bg canvas */
+    #bg{position:fixed;inset:0;z-index:-1}
     .wrap{max-width:900px;margin:0 auto;padding:18px}
     h1{font-size:clamp(22px,3.2vw,32px);margin:0 0 8px}
     .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin:10px 0}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin:10px 0;backdrop-filter:saturate(120%) blur(2px)}
     button{background:#2a3a6a;color:var(--text);border:1px solid var(--border);padding:9px 12px;border-radius:10px;cursor:pointer}
     button.ghost{background:transparent}
+    button.accent{background:#145a56}
     textarea, input{width:100%;background:#0f1630;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px}
     .muted{color:var(--muted);font-size:13px}
     ul{margin:8px 0 0 18px}
@@ -21,11 +25,14 @@
     .two{grid-template-columns:1fr 1fr}
     @media (max-width:780px){.two{grid-template-columns:1fr}}
     .list{display:flex;flex-wrap:wrap;gap:6px}
-    .chip{border:1px solid var(--border);padding:5px 8px;border-radius:999px;background:#0e1530}
+    .chip{border:1px solid var(--border);padding:5px 8px;border-radius:999px;background:var(--chip)}
     .mono{font-family:ui-monospace,Menlo,monospace}
+    /* export image preview (optional hidden) */
+    #exportPreview{display:none}
   </style>
 </head>
 <body>
+  <canvas id="bg"></canvas>
   <div class="wrap">
     <h1>🌊 생각의 바다 — 간단 진행툴</h1>
     <p class="muted">밸런스게임 뽑기 · 키워드 뽑기 · 조 섞기(4인 1조). 로컬에서만 동작, 설치/로그인 없이 사용.</p>
@@ -70,6 +77,7 @@
           <div class="row" style="margin-top:8px">
             <button id="shuffle">섞어서 배정</button>
             <button id="copyTeams" class="ghost">결과 복사</button>
+            <button id="saveImage" class="accent">이미지로 저장</button>
           </div>
           <p class="muted">※ 인원수 4로 나누어 떨어지지 않으면 마지막 조는 3명으로 구성됩니다.</p>
         </div>
@@ -77,12 +85,60 @@
           <div id="teams"></div>
         </div>
       </div>
+      <canvas id="exportPreview" width="1200" height="800"></canvas>
     </section>
 
     <p class="muted">© 생각의 바다 — 심플 버전</p>
   </div>
 
   <script>
+    // ===== BG FLOATING CANVAS =====
+    (function(){
+      const c=document.getElementById('bg');
+      const ctx=c.getContext('2d');
+      const DPR= Math.max(1, window.devicePixelRatio||1);
+      let W,H,particles=[];
+      function resize(){
+        W = c.width = Math.floor(innerWidth*DPR);
+        H = c.height= Math.floor(innerHeight*DPR);
+        c.style.width = innerWidth+'px';
+        c.style.height= innerHeight+'px';
+        spawn();
+      }
+      function spawn(){
+        const count = Math.min(120, Math.floor((innerWidth*innerHeight)/12000));
+        particles = Array.from({length:count}).map(()=>({
+          x: Math.random()*W,
+          y: Math.random()*H,
+          r: (Math.random()*2+0.6)*DPR,
+          a: Math.random()*Math.PI*2,
+          s: Math.random()*0.5+0.2,
+          hue: 210 + Math.random()*40
+        }));
+      }
+      function step(){
+        ctx.clearRect(0,0,W,H);
+        for(const p of particles){
+          p.a += 0.003 + p.s*0.002;
+          p.y -= (0.2 + p.s)*DPR;
+          p.x += Math.cos(p.a)*0.6*DPR;
+          if(p.y < -10*DPR){ p.y = H+10*DPR; p.x = Math.random()*W; }
+          ctx.beginPath();
+          ctx.fillStyle = `hsla(${p.hue},70%,70%,0.08)`;
+          ctx.arc(p.x,p.y,p.r*6,0,Math.PI*2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.fillStyle = `hsla(${p.hue},80%,75%,0.25)`;
+          ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+          ctx.fill();
+        }
+        requestAnimationFrame(step);
+      }
+      addEventListener('resize', resize);
+      resize();
+      step();
+    })();
+
     // ===== 데이터 =====
     const BG = [
       ["평생 하루에 3시간만 자고 체력 풀충전","하루에 12시간 자야 겨우 버팀"],
@@ -118,25 +174,25 @@
 
     // ===== 밸런스게임 =====
     function renderBGPreview(){
-      const ul = $('#bgPreview'); ul.innerHTML='';
+      const ul = $('#bgPreview'); if(!ul) return; ul.innerHTML='';
       BG.forEach((q,i)=>{ const li=document.createElement('li'); li.textContent = `Q${i+1}. ${q[0]}  vs  ${q[1]}`; ul.appendChild(li); });
     }
     function pickBG(n=1){
       const picks = shuffleArray(BG).slice(0,n);
-      const holder = $('#bgResult'); holder.innerHTML='';
-      picks.forEach(([a,b],i)=>{
-        const div=document.createElement('div'); div.className='chip';
-        div.textContent = `Q${i+1}: ${a}  vs  ${b}`;
-        holder.appendChild(div);
-      });
-      return picks.map(([a,b],i)=>`Q${i+1}: ${a} vs ${b}`).join('
-');
+      const holder = $('#bgResult'); if(holder){ holder.innerHTML='';
+        picks.forEach(([a,b],i)=>{
+          const div=document.createElement('div'); div.className='chip';
+          div.textContent = `Q${i+1}: ${a}  vs  ${b}`;
+          holder.appendChild(div);
+        });
+      }
+      return picks.map(([a,b],i)=>`Q${i+1}: ${a} vs ${b}`).join('\n');
     }
 
     // ===== 키워드 =====
     function renderKWPreview(){
-      const ul = $('#kwPreview'); ul.innerHTML='';
-      KW.forEach((k,i)=>{
+      const ul = $('#kwPreview'); if(!ul) return; ul.innerHTML='';
+      KW.forEach((k)=>{
         const li=document.createElement('li');
         li.innerHTML = `<strong>${k.name}</strong> — ${k.qs.join(' / ')}`;
         ul.appendChild(li);
@@ -144,14 +200,14 @@
     }
     function pickKW(n=2){
       const picks = shuffleArray(KW).slice(0,n);
-      const holder = $('#kwResult'); holder.innerHTML='';
-      picks.forEach((k)=>{
-        const div=document.createElement('div'); div.className='chip';
-        div.textContent = `${k.name}: ${k.qs[0]}`;
-        holder.appendChild(div);
-      });
-      return picks.map(k=>`${k.name}: ${k.qs.join(' / ')}`).join('
-');
+      const holder = $('#kwResult'); if(holder){ holder.innerHTML='';
+        picks.forEach((k)=>{
+          const div=document.createElement('div'); div.className='chip';
+          div.textContent = `${k.name}: ${k.qs[0]}`;
+          holder.appendChild(div);
+        });
+      }
+      return picks.map(k=>`${k.name}: ${k.qs.join(' / ')}`).join('\n');
     }
 
     // ===== 조 섞기 (4인 1조) =====
@@ -166,7 +222,7 @@
     }
 
     function renderTeams(teams){
-      const root = $('#teams'); root.innerHTML='';
+      const root = $('#teams'); if(!root) return; root.innerHTML='';
       teams.forEach((t,idx)=>{
         const box=document.createElement('div'); box.className='card';
         const title=document.createElement('div'); title.innerHTML = `<strong>${idx+1}조</strong> <span class="muted">(${t.length}명)</span>`;
@@ -180,39 +236,133 @@
       }
     }
 
-    // ===== 이벤트 바인딩 =====
-    window.addEventListener('DOMContentLoaded', ()=>{
-      $('#names').value = DEFAULT_NAMES.join('
-');
+    // ===== 팀 이미지로 저장 (캔버스 렌더링) =====
+    function roundRect(ctx, x, y, w, h, r){
+      const rr = Math.min(r, w/2, h/2);
+      ctx.beginPath();
+      ctx.moveTo(x+rr, y);
+      ctx.arcTo(x+w, y, x+w, y+h, rr);
+      ctx.arcTo(x+w, y+h, x, y+h, rr);
+      ctx.arcTo(x, y+h, x, y, rr);
+      ctx.arcTo(x, y, x+w, y, rr);
+      ctx.closePath();
+    }
+
+    function exportTeamsImage(){
+      const boxes = Array.from($('#teams').querySelectorAll('.card'));
+      if(!boxes.length){ alert('먼저 섞기를 눌러 팀을 만들어요!'); return; }
+      const canvas = document.getElementById('exportPreview');
+      const ctx = canvas.getContext('2d');
+      // Layout calc
+      const W = 1200; // fixed width
+      const P = 40;   // outer padding
+      const COL = 2;  // columns
+      const GAP = 24; // gap between cards
+      const cardW = Math.floor((W - P*2 - GAP*(COL-1)) / COL);
+      // compute height by content
+      const namesPerBox = boxes.map(b=> b.querySelectorAll('li').length);
+      const rows = Math.ceil(boxes.length / COL);
+      const cardHByIdx = namesPerBox.map(n=> 80 + n*34 + 16);
+      const rowHeights = Array.from({length:rows}).map((_,r)=>{
+        const i1 = r*COL, i2 = i1+1;
+        return Math.max(cardHByIdx[i1]||120, cardHByIdx[i2]||120);
+      });
+      const H = P*2 + rowHeights.reduce((a,b)=>a+b,0) + GAP*(rows-1) + 60;
+      canvas.width = W; canvas.height = H;
+
+      // bg gradient
+      const grad = ctx.createLinearGradient(0,0,W,H);
+      grad.addColorStop(0,'#0b1020');
+      grad.addColorStop(1,'#172244');
+      ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+
+      // title
+      ctx.fillStyle = '#eaf0ff';
+      ctx.font = 'bold 28px "Pretendard", "Malgun Gothic", system-ui';
+      ctx.fillText('생각의 바다 — 조 편성', P, 46);
+      ctx.font = '14px "Pretendard", "Malgun Gothic", system-ui';
+      const now = new Date();
+      ctx.fillText(now.toLocaleString(), W-P-260, 46);
+
+      // draw cards
+      let y = P+40;
+      boxes.forEach((box,i)=>{
+        const col = i % COL; const row = Math.floor(i / COL);
+        const x = P + col*(cardW+GAP);
+        if(col===0 && i>0){ y += (rowHeights[row-1]||120) + GAP; }
+        const names = Array.from(box.querySelectorAll('li')).map(li=>li.textContent);
+        const title = box.querySelector('strong')?.textContent || `${i+1}조`;
+        const cardH = cardHByIdx[i];
+        // card bg
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = 'rgba(255,255,255,0.06)';
+        roundRect(ctx,x,y,cardW,cardH,14); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.stroke();
+        // title
+        ctx.fillStyle = '#cfe1ff';
+        ctx.font = '600 18px "Pretendard", "Malgun Gothic", system-ui';
+        ctx.fillText(`${title} (${names.length}명)`, x+18, y+32);
+        // names
+        ctx.fillStyle = '#eaf0ff';
+        ctx.font = '16px "Pretendard", "Malgun Gothic", system-ui';
+        names.forEach((n,idx2)=>{
+          ctx.fillText(`• ${n}`, x+22, y+64 + idx2*28);
+        });
+      });
+
+      // download
+      const url = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = url; a.download = '생각의바다_조편성.png';
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    // ===== 초기화 =====
+    function renderKWPreview(){
+      const ul = $('#kwPreview'); if(!ul) return; ul.innerHTML='';
+      KW.forEach((k)=>{
+        const li=document.createElement('li');
+        li.innerHTML = `<strong>${k.name}</strong> — ${k.qs.join(' / ')}`;
+        ul.appendChild(li);
+      });
+    }
+
+    function init(){
+      const namesBox = $('#names'); if(namesBox) namesBox.value = DEFAULT_NAMES.join('\n');
       renderBGPreview();
       renderKWPreview();
 
-      $('#pickBG').addEventListener('click', ()=> pickBG(1));
-      $('#pickBG3').addEventListener('click', ()=> pickBG(3));
-      $('#copyBG').addEventListener('click', ()=> copyText($('#bgResult').textContent.trim()));
+      const pickBGBtn = $('#pickBG'); if(pickBGBtn) pickBGBtn.addEventListener('click', ()=> pickBG(1));
+      const pickBG3Btn = $('#pickBG3'); if(pickBG3Btn) pickBG3Btn.addEventListener('click', ()=> pickBG(3));
+      const copyBGBtn = $('#copyBG'); if(copyBGBtn) copyBGBtn.addEventListener('click', ()=> copyText($('#bgResult').textContent.trim()));
 
-      $('#pickKW2').addEventListener('click', ()=> pickKW(2));
-      $('#pickKW1').addEventListener('click', ()=> pickKW(1));
-      $('#copyKW').addEventListener('click', ()=> copyText($('#kwResult').textContent.trim()));
+      const pickKW2Btn = $('#pickKW2'); if(pickKW2Btn) pickKW2Btn.addEventListener('click', ()=> pickKW(2));
+      const pickKW1Btn = $('#pickKW1'); if(pickKW1Btn) pickKW1Btn.addEventListener('click', ()=> pickKW(1));
+      const copyKWBtn = $('#copyKW'); if(copyKWBtn) copyKWBtn.addEventListener('click', ()=> copyText($('#kwResult').textContent.trim()));
 
-      $('#shuffle').addEventListener('click', ()=>{
-        const names = $('#names').value.split(/
-|,|;/).map(x=>x.trim()).filter(Boolean);
+      const shuffleBtn = $('#shuffle'); if(shuffleBtn) shuffleBtn.addEventListener('click', ()=>{
+        const names = $('#names').value.split(/\n|,|;/).map(x=>x.trim()).filter(Boolean);
         const teams = groupByFour(names);
         renderTeams(teams);
       });
-      $('#copyTeams').addEventListener('click', ()=>{
+      const copyTeamsBtn = $('#copyTeams'); if(copyTeamsBtn) copyTeamsBtn.addEventListener('click', ()=>{
         const boxes = Array.from($('#teams').querySelectorAll('.card'));
         if(!boxes.length){ alert('먼저 섞기를 눌러 팀을 만들어요!'); return; }
         const lines = boxes.map((box,i)=>{
           const who = Array.from(box.querySelectorAll('li')).map(li=>li.textContent).join(', ');
           const cnt = box.querySelector('.muted').textContent.replace(/[()명]/g,'');
           return `${i+1}조 (${cnt}명): ${who}`;
-        }).join('
-');
+        }).join('\n');
         copyText(lines);
       });
-    });
+      const saveBtn = $('#saveImage'); if(saveBtn) saveBtn.addEventListener('click', exportTeamsImage);
+    }
+
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   </script>
 </body>
 </html>
