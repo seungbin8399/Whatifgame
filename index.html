@@ -9,10 +9,10 @@
     *{box-sizing:border-box}
     html,body{height:100%}
     body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--text);position:relative;overflow-x:hidden}
-    /* floating bg canvas */
     #bg{position:fixed;inset:0;z-index:-1}
     .wrap{max-width:900px;margin:0 auto;padding:18px}
     h1{font-size:clamp(22px,3.2vw,32px);margin:0 0 8px}
+    h2{margin:0 0 6px}
     .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
     .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin:10px 0;backdrop-filter:saturate(120%) blur(2px)}
     button{background:#2a3a6a;color:var(--text);border:1px solid var(--border);padding:9px 12px;border-radius:10px;cursor:pointer}
@@ -27,7 +27,6 @@
     .list{display:flex;flex-wrap:wrap;gap:6px}
     .chip{border:1px solid var(--border);padding:5px 8px;border-radius:999px;background:var(--chip)}
     .mono{font-family:ui-monospace,Menlo,monospace}
-    /* export image preview (optional hidden) */
     #exportPreview{display:none}
   </style>
 </head>
@@ -35,7 +34,7 @@
   <canvas id="bg"></canvas>
   <div class="wrap">
     <h1>🌊 생각의 바다 — 간단 진행툴</h1>
-    <p class="muted">밸런스게임 뽑기 · 키워드 뽑기 · 조 섞기(4인 1조). 로컬에서만 동작, 설치/로그인 없이 사용.</p>
+    <p class="muted">밸런스게임 뽑기 · 키워드 뽑기 · 조 섞기(6인×2, 4인×2). 로컬에서만 동작, 설치/로그인 없음.</p>
 
     <!-- 밸런스게임 -->
     <section class="card">
@@ -69,17 +68,17 @@
 
     <!-- 조 섞기 -->
     <section class="card">
-      <h2>3) 조 섞기 (4인 1조)</h2>
+      <h2>3) 조 섞기 (6인×2, 4인×2)</h2>
       <div class="grid two">
         <div>
           <label class="muted">참여자 (줄바꿈으로 구분)</label>
           <textarea id="names" rows="8"></textarea>
           <div class="row" style="margin-top:8px">
-            <button id="shuffle">섞어서 배정</button>
+            <button id="shuffle">섞어서 배정 (6×2, 4×2)</button>
             <button id="copyTeams" class="ghost">결과 복사</button>
             <button id="saveImage" class="accent">이미지로 저장</button>
           </div>
-          <p class="muted">※ 인원수 4로 나누어 떨어지지 않으면 마지막 조는 3명으로 구성됩니다.</p>
+          <p class="muted">※ 총 필요 인원 20명 (6·6·4·4). 남는 인원은 <em>예비/스탠바이</em>로 표시됩니다.</p>
         </div>
         <div>
           <div id="teams"></div>
@@ -146,7 +145,7 @@
       ["내가 사랑하는 사람과만 남는 세상","나를 사랑하는 사람과만 남는 세상"],
       ["모든 사람에게 호감형","단 한 사람에게만 진심으로 사랑받음"],
       ["여름에만 살기","겨울에만 살기"],
-      ["내가 사랑하는 사람이 먼저 세상을 떠나는 것, 내가 먼저 세상을 떠나는 것"],
+      ["내가 사랑하는 사람이 먼저 세상을 떠나는 것","내가 먼저 세상을 떠나는 것"],
       ["행복은 선택할 수 있는 것","행복은 우연히 찾아오는 것"],
       ["과거로 시간여행","미래로 시간여행"],
       ["사랑 없는 결혼","돈 없는 결혼"],
@@ -156,7 +155,6 @@
       ["한국 사회의 기대에 맞춰 살기","내 가치관대로 살지만 비난받기"],
       ["사소한 맞춤법도 틀리는 애인","사소한 맞춤법도 지적하는 애인"],
       ["공공장소에서도 스킨십하는 애인","손 닿으면 펄쩍 뛰어 도망가는 애인"]
-      
     ];
 
     const KW = [
@@ -180,12 +178,20 @@
       }
       return a;
     }
-    function copyText(t){ navigator.clipboard.writeText(t).then(()=> alert('복사 완료!')); }
+    function copyText(t){
+      const txt = (t||'').trim();
+      if(!txt){ alert('복사할 내용이 없습니다.'); return; }
+      navigator.clipboard.writeText(txt).then(()=> alert('복사 완료!'));
+    }
 
     // ===== 밸런스게임 =====
     function renderBGPreview(){
       const ul = $('#bgPreview'); if(!ul) return; ul.innerHTML='';
-      BG.forEach((q,i)=>{ const li=document.createElement('li'); li.textContent = `Q${i+1}. ${q[0]}  vs  ${q[1]}`; ul.appendChild(li); });
+      BG.forEach((q,i)=>{
+        const li=document.createElement('li');
+        li.textContent = `Q${i+1}. ${q[0]}  vs  ${q[1]}`;
+        ul.appendChild(li);
+      });
     }
     function pickBG(n=1){
       const picks = shuffleArray(BG).slice(0,n);
@@ -220,33 +226,53 @@
       return picks.map(k=>`${k.name}: ${k.qs.join(' / ')}`).join('\n');
     }
 
-    // ===== 조 섞기 (4인 1조) =====
+    // ===== 조 섞기 (6인×2, 4인×2) =====
     const DEFAULT_NAMES = [
       '유승빈','김상권','권동국','박유정','변서호','손가은','심원섭','이이강','이주은','정용진','최승아','하경덕','오승빈','유진','이명비','이종화','김환희','신재민','최유리'
     ];
 
-    function groupByFour(list){
+    // sizes = [6,6,4,4]
+    function groupBySizes(list, sizes=[6,6,4,4]){
       const shuffled = shuffleArray(list.filter(x=>x && x.trim()));
-      const teams=[]; for(let i=0;i<shuffled.length;i+=4){ teams.push(shuffled.slice(i,i+4)); }
-      return teams;
+      const teams=[];
+      let idx=0;
+      for(const sz of sizes){
+        const slice = shuffled.slice(idx, idx+sz);
+        teams.push(slice);
+        idx += sz;
+      }
+      const leftover = shuffled.slice(idx);
+      return {teams, leftover};
     }
 
-    function renderTeams(teams){
+    function renderTeams(teams, leftover){
       const root = $('#teams'); if(!root) return; root.innerHTML='';
+
       teams.forEach((t,idx)=>{
+        const targetSize = idx<2 ? 6 : 4; // 앞 2개는 6인, 뒤 2개는 4인
         const box=document.createElement('div'); box.className='card';
-        const title=document.createElement('div'); title.innerHTML = `<strong>${idx+1}조</strong> <span class="muted">(${t.length}명)</span>`;
-        const ul=document.createElement('ul'); t.forEach(n=>{ const li=document.createElement('li'); li.textContent=n; ul.appendChild(li); });
+        const title=document.createElement('div');
+        title.innerHTML = `<strong>${idx+1}조</strong> <span class="muted">(${t.length}/${targetSize}명)</span>`;
+        const ul=document.createElement('ul');
+        t.forEach(n=>{ const li=document.createElement('li'); li.textContent=n; ul.appendChild(li); });
         box.appendChild(title); box.appendChild(ul); root.appendChild(box);
       });
-      if(teams.length && teams[teams.length-1].length!==4){
+
+      if(leftover && leftover.length){
+        const box=document.createElement('div'); box.className='card';
+        const title=document.createElement('div');
+        title.innerHTML = `<strong>예비/스탠바이</strong> <span class="muted">(${leftover.length}명)</span>`;
+        const ul=document.createElement('ul');
+        leftover.forEach(n=>{ const li=document.createElement('li'); li.textContent=n; ul.appendChild(li); });
+        box.appendChild(title); box.appendChild(ul); root.appendChild(box);
+
         const p=document.createElement('p'); p.className='muted';
-        p.textContent='마지막 조는 3명입니다. 필요 시 진행자/게스트를 추가하거나 조 합치기를 고려하세요.';
+        p.textContent='※ 예비 인원은 진행자가 상황에 따라 4인 조에 합류시키거나 별도 테이블로 운영하세요.';
         root.appendChild(p);
       }
     }
 
-    // ===== 팀 이미지로 저장 (캔버스 렌더링) =====
+    // ===== 팀 이미지로 저장 =====
     function roundRect(ctx, x, y, w, h, r){
       const rr = Math.min(r, w/2, h/2);
       ctx.beginPath();
@@ -263,13 +289,12 @@
       if(!boxes.length){ alert('먼저 섞기를 눌러 팀을 만들어요!'); return; }
       const canvas = document.getElementById('exportPreview');
       const ctx = canvas.getContext('2d');
-      // Layout calc
-      const W = 1200; // fixed width
-      const P = 40;   // outer padding
-      const COL = 2;  // columns
-      const GAP = 24; // gap between cards
+      const W = 1200;
+      const P = 40;
+      const COL = 2;
+      const GAP = 24;
       const cardW = Math.floor((W - P*2 - GAP*(COL-1)) / COL);
-      // compute height by content
+
       const namesPerBox = boxes.map(b=> b.querySelectorAll('li').length);
       const rows = Math.ceil(boxes.length / COL);
       const cardHByIdx = namesPerBox.map(n=> 80 + n*34 + 16);
@@ -280,39 +305,37 @@
       const H = P*2 + rowHeights.reduce((a,b)=>a+b,0) + GAP*(rows-1) + 60;
       canvas.width = W; canvas.height = H;
 
-      // bg gradient
       const grad = ctx.createLinearGradient(0,0,W,H);
       grad.addColorStop(0,'#0b1020');
       grad.addColorStop(1,'#172244');
       ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
 
-      // title
       ctx.fillStyle = '#eaf0ff';
       ctx.font = 'bold 28px "Pretendard", "Malgun Gothic", system-ui';
-      ctx.fillText('생각의 바다 — 조 편성', P, 46);
+      ctx.fillText('생각의 바다 — 조 편성 (6×2, 4×2)', P, 46);
       ctx.font = '14px "Pretendard", "Malgun Gothic", system-ui';
       const now = new Date();
       ctx.fillText(now.toLocaleString(), W-P-260, 46);
 
-      // draw cards
       let y = P+40;
       boxes.forEach((box,i)=>{
         const col = i % COL; const row = Math.floor(i / COL);
         const x = P + col*(cardW+GAP);
         if(col===0 && i>0){ y += (rowHeights[row-1]||120) + GAP; }
         const names = Array.from(box.querySelectorAll('li')).map(li=>li.textContent);
-        const title = box.querySelector('strong')?.textContent || `${i+1}조`;
+        const strong = box.querySelector('strong')?.textContent || `${i+1}조`;
+        const muted = box.querySelector('.muted')?.textContent || '';
         const cardH = cardHByIdx[i];
-        // card bg
+
         ctx.globalAlpha = 1;
         ctx.fillStyle = 'rgba(255,255,255,0.06)';
         roundRect(ctx,x,y,cardW,cardH,14); ctx.fill();
         ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.stroke();
-        // title
+
         ctx.fillStyle = '#cfe1ff';
         ctx.font = '600 18px "Pretendard", "Malgun Gothic", system-ui';
-        ctx.fillText(`${title} (${names.length}명)`, x+18, y+32);
-        // names
+        ctx.fillText(`${strong} ${muted}`, x+18, y+32);
+
         ctx.fillStyle = '#eaf0ff';
         ctx.font = '16px "Pretendard", "Malgun Gothic", system-ui';
         names.forEach((n,idx2)=>{
@@ -320,52 +343,45 @@
         });
       });
 
-      // download
       const url = canvas.toDataURL('image/png');
       const a = document.createElement('a');
-      a.href = url; a.download = '생각의바다_조편성.png';
+      a.href = url; a.download = '생각의바다_조편성_6x2_4x2.png';
       document.body.appendChild(a); a.click(); a.remove();
     }
 
     // ===== 초기화 =====
-    function renderKWPreview(){
-      const ul = $('#kwPreview'); if(!ul) return; ul.innerHTML='';
-      KW.forEach((k)=>{
-        const li=document.createElement('li');
-        li.innerHTML = `<strong>${k.name}</strong> — ${k.qs.join(' / ')}`;
-        ul.appendChild(li);
-      });
-    }
-
     function init(){
       const namesBox = $('#names'); if(namesBox) namesBox.value = DEFAULT_NAMES.join('\n');
       renderBGPreview();
       renderKWPreview();
 
-      const pickBGBtn = $('#pickBG'); if(pickBGBtn) pickBGBtn.addEventListener('click', ()=> pickBG(1));
-      const pickBG3Btn = $('#pickBG3'); if(pickBG3Btn) pickBG3Btn.addEventListener('click', ()=> pickBG(3));
-      const copyBGBtn = $('#copyBG'); if(copyBGBtn) copyBGBtn.addEventListener('click', ()=> copyText($('#bgResult').textContent.trim()));
+      $('#pickBG')?.addEventListener('click', ()=> pickBG(1));
+      $('#pickBG3')?.addEventListener('click', ()=> pickBG(3));
+      $('#copyBG')?.addEventListener('click', ()=> copyText($('#bgResult').textContent));
 
-      const pickKW2Btn = $('#pickKW2'); if(pickKW2Btn) pickKW2Btn.addEventListener('click', ()=> pickKW(2));
-      const pickKW1Btn = $('#pickKW1'); if(pickKW1Btn) pickKW1Btn.addEventListener('click', ()=> pickKW(1));
-      const copyKWBtn = $('#copyKW'); if(copyKWBtn) copyKWBtn.addEventListener('click', ()=> copyText($('#kwResult').textContent.trim()));
+      $('#pickKW2')?.addEventListener('click', ()=> pickKW(2));
+      $('#pickKW1')?.addEventListener('click', ()=> pickKW(1));
+      $('#copyKW')?.addEventListener('click', ()=> copyText($('#kwResult').textContent));
 
-      const shuffleBtn = $('#shuffle'); if(shuffleBtn) shuffleBtn.addEventListener('click', ()=>{
+      $('#shuffle')?.addEventListener('click', ()=>{
         const names = $('#names').value.split(/\n|,|;/).map(x=>x.trim()).filter(Boolean);
-        const teams = groupByFour(names);
-        renderTeams(teams);
+        const {teams, leftover} = groupBySizes(names, [6,6,4,4]);
+        renderTeams(teams, leftover);
       });
-      const copyTeamsBtn = $('#copyTeams'); if(copyTeamsBtn) copyTeamsBtn.addEventListener('click', ()=>{
+
+      $('#copyTeams')?.addEventListener('click', ()=>{
         const boxes = Array.from($('#teams').querySelectorAll('.card'));
         if(!boxes.length){ alert('먼저 섞기를 눌러 팀을 만들어요!'); return; }
         const lines = boxes.map((box,i)=>{
+          const title = box.querySelector('strong')?.textContent || `${i+1}조`;
           const who = Array.from(box.querySelectorAll('li')).map(li=>li.textContent).join(', ');
-          const cnt = box.querySelector('.muted').textContent.replace(/[()명]/g,'');
-          return `${i+1}조 (${cnt}명): ${who}`;
+          const cnt = box.querySelector('.muted')?.textContent.replace(/[()명]/g,'') || '';
+          return `${title}${cnt?` (${cnt}명)`:''}: ${who}`;
         }).join('\n');
         copyText(lines);
       });
-      const saveBtn = $('#saveImage'); if(saveBtn) saveBtn.addEventListener('click', exportTeamsImage);
+
+      $('#saveImage')?.addEventListener('click', exportTeamsImage);
     }
 
     if(document.readyState === 'loading'){
